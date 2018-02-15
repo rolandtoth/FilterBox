@@ -700,13 +700,7 @@
                 afterFilter && afterFilter.call(self);
             }
 
-            document.dispatchEvent(new CustomEvent('filterboxsearch', {
-                detail: {
-                    visibleItems: self.getVisible(),
-                    filter: self.getFilter(),
-                    target: target
-                }
-            }));
+            document.dispatchEvent(new CustomEvent('filterboxsearch', {detail: self}));
         }
 
 
