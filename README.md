@@ -9,7 +9,7 @@ Javascript lib for filtering DOM items
 - highlight searched terms (optional)
 - apply to existing DOM input field or add new
 - create any number of displays (counters, status texts, etc)
-- fine-grained control over tags, attributes, DOM position of created elements
+- fine-grained control over created elements (tag, attributes, DOM position)
 - multiple filterboxes on the same target
 - callbacks and public methods
 - no dependencies
