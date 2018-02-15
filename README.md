@@ -11,7 +11,7 @@ Javascript lib for filtering DOM items
 - create any number of displays (counters, status texts, etc)
 - fine-grained control over created elements (tag, attributes, DOM position)
 - multiple filterboxes on the same target
-- MutationObserver to auto-update displays on target DOM change (optional)
+- auto-update displays on target DOM change (optional)
 - callbacks and public methods
 - force zebra stripe background (optional)
 - no dependencies
