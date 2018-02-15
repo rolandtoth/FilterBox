@@ -14,4 +14,5 @@ Javascript lib for filtering DOM items
 - auto-update displays on target DOM change (optional)
 - callbacks and public methods
 - force zebra stripe background (optional)
+- lazy init (only on first input focus)
 - no dependencies
