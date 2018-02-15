@@ -1,6 +1,6 @@
 # FilterBox
 
-Javascript lib for filtering DOM items
+Javascript search-as-you-type library for DOM items
 
 ## Features
 
