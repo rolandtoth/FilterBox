@@ -1,5 +1,5 @@
 /**
- * FilterBox v0.2.8
+ * FilterBox v0.3.0
  */
 
 (function (window, document) {
@@ -99,7 +99,7 @@
             onReady = prepareCallback('onReady'),
             beforeDestroy = prepareCallback('beforeDestroy'),
             afterDestroy = prepareCallback('afterDestroy'),
-            disableObserver = o.disableObserver === true,
+            enableObserver = o.enableObserver === true,
             hideSelector = '',
             hlTag = o.highlight && o.highlight.tag ? o.highlight.tag : 'fbxhl',
             hlClass = 'on' + suffix,
@@ -162,8 +162,8 @@
 
 
         self.destroy = function () {
-            if (!init) return;
 
+            if (!init) return;
             if (beforeDestroy && beforeDestroy.call(self) === false) return;
 
             if ($target.tagName === 'TABLE') $target.removeAttribute(initTableAttr);
@@ -237,7 +237,8 @@
 
             if (!zebra) return false;
 
-            var counter = 1;
+            var $items = getItems(),
+                counter = 1;
 
             for (var i = 0; i < $items.length; i++) {
                 var $item = $items[i];
@@ -504,7 +505,7 @@
 
             document.addEventListener('filterboxsearch', addFilterBoxSearch);
 
-            if (!disableObserver && window.MutationObserver) {
+            if (enableObserver && window.MutationObserver) {
                 observer = new MutationObserver(function (mutationsList) {
                     for (var i = 0; i < mutationsList.length; i++) {
                         var t = mutationsList[i].type;
@@ -590,6 +591,8 @@
                 return false;
             }
 
+            var $items = getItems();
+
             for (var i = 0; i < $items.length; i++) {
 
                 var $item = $items[i],
@@ -671,11 +674,14 @@
             dehighlight($target);
 
             if (v === '') {
+
                 setStyles('');
                 hideSelector = '';
                 afterFilter && afterFilter.call(self);
+                self.updateDisplays(target);
 
             } else {
+
                 // do the filter
                 var terms = getTerms(v),
                     $dataSources = dataSources.join(','),
@@ -697,6 +703,7 @@
                     }, 0);
                 }
 
+                self.updateDisplays(target);
                 afterFilter && afterFilter.call(self);
             }
 
@@ -738,6 +745,8 @@
 
 
         self.getFirstVisibleItem = function () {
+            var $items = getItems();
+
             for (var i = 0; i < $items.length; i++) {
                 if (!isHidden($items[i])) {
                     return $items[i];
