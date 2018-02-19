@@ -82,7 +82,7 @@
             $label,
             displays = o.displays && typeof o.displays === 'object' ? o.displays : false,
             $displays = [],
-            suffix = o.suffix ? o.suffix : '',
+            suffix = o.suffix ? '-' + o.suffix : '',
             zebra = o.zebra || false,
             zebraAttr = 'data-odd' + suffix,
             hideAttr = 'data-hide' + suffix,
