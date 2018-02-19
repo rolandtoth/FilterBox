@@ -6,21 +6,21 @@ FilterBox is a pure JavaScript utility to filter (search) DOM elements.
 
 - fast CSS-based filtering
 - restrict filtering to specific elements (eg. table columns)
-- highlight search terms (optional)
+- highlight search terms
 - apply to existing DOM input field or add new
 - create any number of displays (counters, status texts, etc)
 - fine-grained control over created elements (tag, attributes, DOM position)
 - add multiple filterboxes to the same target
-- auto-update displays on target DOM change (optional)
+- auto-update displays on target DOM change
 - callbacks and public methods
-- force zebra stripe background (optional)
+- force zebra stripe background
 - lazy init (only on first input focus)
 - no dependencies
 
 
 ## Terminology
 
-**Exising DOM elements**
+**Existing DOM elements**
 
 | Name | Description | Required?
 | :--- | :--- | :---
@@ -32,10 +32,10 @@ FilterBox is a pure JavaScript utility to filter (search) DOM elements.
 
 | Name | Description | Required?
 | :--- | :--- | :---
-| input | This is the main input where you will enter search terms. Can be an existing DOM element too. | required
-| wrapper | Element to wrap the main input (eg. for easier CSS styling) | -
-| label | Label element to be added to the main input | -
-| displays | Additional elements to add to the DOM, eg. counters, status messages, etc | -
+| input | This is the main input where you enter the search terms. Can be an existing DOM element too. | required
+| wrapper | Element to wrap the main input (eg. for easier CSS styling). | -
+| label | Label element to be added to the main input. | -
+| displays | Additional elements to add to the DOM, eg. counters, status messages, etc. | -
 
 
 ## Getting Started
@@ -58,11 +58,11 @@ addFilterBox({
 );
 ```
 
-This example uses the table with class name `world-countries` as the main target and filter its rows in the tbody. Because the option `addTo` is not set, the filterbox input will be added before (above) the table by default.
+This example uses the table with class name `world-countries` as the main target and filter its tbody rows. Because the option `addTo` is not set, the filterbox input will be added before (above) the table by default.
 
 ### Advanced example
 
-The basic example lacks many features that FilterBox offers, eg. has no displays (counters), no highlighting, no callbacks, zebra striping, etc. The advanced example shows how to add them.
+The basic example lacks many features that FilterBox offers, eg. has no displays (counters), no highlighting, no callbacks etc. The advanced example shows how to add them.
 
 
 ```javascript
@@ -111,7 +111,7 @@ var myFilterBox = addFilterBox({
                 position: 'after'
             },
             text: function () {
-                return !this.getVisible() ? 'Sorry, no matching item for "' + this.getFilter() + '"' : '';
+                return !this.getVisible() ? 'Sorry, no matching item for "' + this.getFilter() + '".' : '';
             }
         }
     },
