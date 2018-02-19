@@ -1,7 +1,6 @@
 /**
- * FilterBox v0.3.0
+ * FilterBox v0.3.1
  */
-
 (function (window, document) {
 
     'use strict';
@@ -39,8 +38,8 @@
             return new FilterBox(o);
         }
         catch (err) {
-            if (o && o.debug) {
-                console.log(o.debug === 'verbose' ? err : err.message);
+            if (o && o.debuglevel) {
+                console.log(o.debuglevel === 2 ? err : err.message);
             }
             return false;
         }
@@ -59,7 +58,7 @@
         }
 
 
-        function prepareCallback(n) {
+        function setCb(n) {
             return o.callbacks && typeof o.callbacks[n] === 'function' ? o.callbacks[n] : false;
         }
 
@@ -71,7 +70,7 @@
             $items,
             dataSources = o.target.sources || ['*'],
             $addTo = o.addTo && o.addTo.selector && document.querySelector(o.addTo.selector) ? document.querySelector(o.addTo.selector) : $target,
-            addPosition = o.addTo && o.addTo.position ? o.addTo.position : 'before',
+            position = o.addTo && o.addTo.position ? o.addTo.position : 'before',
             inputDelay = o.inputDelay >= 0 ? o.inputDelay : 300,
             input = o.input && o.input.selector && document.querySelector(o.input.selector) ? o.input.selector : false,
             inputAttrs = o.input && o.input.attrs ? o.input.attrs : false,
@@ -92,19 +91,20 @@
             filterAttr = o.filterAttr || 'data-filter-fbx' + suffix,
             styleId = 'filterbox-css' + suffix,
             useDomFilter = o.useDomFilter || false,
-            beforeFilter = prepareCallback('beforeFilter'),
-            afterFilter = prepareCallback('afterFilter'),
-            onEnter = prepareCallback('onEnter'),
-            onEscape = prepareCallback('onEscape'),
-            onReady = prepareCallback('onReady'),
-            beforeDestroy = prepareCallback('beforeDestroy'),
-            afterDestroy = prepareCallback('afterDestroy'),
+            beforeFilter = setCb('beforeFilter'),
+            afterFilter = setCb('afterFilter'),
+            onEnter = setCb('onEnter'),
+            onEscape = setCb('onEscape'),
+            onReady = setCb('onReady'),
+            beforeDestroy = setCb('beforeDestroy'),
+            afterDestroy = setCb('afterDestroy'),
             enableObserver = o.enableObserver === true,
             hideSelector = '',
-            hlTag = o.highlight && o.highlight.tag ? o.highlight.tag : 'fbxhl',
+            hl = o.highlight || false,
+            hlTag = hl && hl.tag ? hl.tag : 'fbxhl',
             hlClass = 'on' + suffix,
-            hlStyle = o.highlight && o.highlight.style ? hlTag + '.' + hlClass + '{' + o.highlight.style + '}' : '',
-            hlMinChar = o.highlight && o.highlight.minChar ? o.highlight.minChar : 2,
+            hlStyle = hl && hl.style ? hlTag + '.' + hlClass + '{' + hl.style + '}' : '',
+            hlMinChar = hl && hl.minChar ? hl.minChar : 2,
             hiddenStyle = '[' + hideAttr + '="1"]' + '{display:none}',
             init = false,
             observer;
@@ -238,14 +238,14 @@
             if (!zebra) return false;
 
             var $items = getItems(),
-                counter = 1;
+                z = 1;
 
             for (var i = 0; i < $items.length; i++) {
                 var $item = $items[i];
 
                 if (!isHidden($item)) {
-                    $item.setAttribute(zebraAttr, (counter % 2).toString());
-                    counter++;
+                    $item.setAttribute(zebraAttr, (z % 2).toString());
+                    z++;
                 } else {
                     $item.removeAttribute(zebraAttr);
                 }
@@ -261,8 +261,14 @@
         };
 
 
-        self.focus = function () {
+        self.focus = function (moveToEnd) {
             $input.focus();
+
+            if (moveToEnd && $input.value && $input.setSelectionRange) {
+                var len = $input.value.length * 2;
+                $input.setSelectionRange(len, len);
+            }
+
             return self;
         };
 
@@ -408,7 +414,7 @@
             } else {
                 $input = document.createElement('input');
                 $input.type = 'text';
-                insertDom($input, $addTo, addPosition);
+                insertDom($input, $addTo, position);
             }
 
             setAttrs($input, inputAttrs);
@@ -458,19 +464,17 @@
 
             for (var k in displays) {
                 if (!displays.hasOwnProperty(k)) continue;
-                if (!displays[k].addTo) continue;
 
                 var d = displays[k],
-                    $addTo = d.addTo.selector ? document.querySelector(d.addTo.selector) : false,
-                    addPosition = d.addTo.position || 'after',
+                    $addTo = d.addTo && d.addTo.selector ? document.querySelector(d.addTo.selector) : $target,
+                    position = d.addTo && d.addTo.position || 'before',
                     tag = d.tag || 'div',
-                    text = d.text && typeof d.text === 'function' ? d.text : false,
-                    $display;
+                    text = d.text && typeof d.text === 'function' ? d.text : false;
 
-                if ($addTo && text) {
-                    $display = document.createElement(tag);
+                if (text) {
+                    var $display = document.createElement(tag);
                     setAttrs($display, d.attrs);
-                    insertDom($display, $addTo, addPosition);
+                    insertDom($display, $addTo, position);
 
                     $displays.push({
                         el: $display,
