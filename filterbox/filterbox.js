@@ -1,5 +1,5 @@
 /**
- * FilterBox v0.3.1
+ * FilterBox v0.3.2
  */
 (function (window, document) {
 
@@ -82,13 +82,15 @@
             $label,
             displays = o.displays && typeof o.displays === 'object' ? o.displays : false,
             $displays = [],
-            suffix = o.suffix ? '-' + o.suffix : '',
+            suffix = o.suffix ? o.suffix : '',
             zebra = o.zebra || false,
-            zebraAttr = 'data-odd-fbx' + suffix,
-            hideAttr = 'data-hide-fbx' + suffix,
-            initAttr = 'data-init-fbx' + suffix,
-            initTableAttr = 'data-init-table-fbx',
-            filterAttr = o.filterAttr || 'data-filter-fbx' + suffix,
+            zebraAttr = 'data-odd' + suffix,
+            hideAttr = 'data-hide' + suffix,
+            initAttr = 'data-init' + suffix,
+            initTableAttr = 'data-init-table' + suffix,
+            hasFilterAttr = 'data-has-filter' + suffix,
+            noMatchAttr = 'data-no-match' + suffix,
+            filterAttr = o.filterAttr || 'data-filter' + suffix,
             styleId = 'filterbox-css' + suffix,
             useDomFilter = o.useDomFilter || false,
             beforeFilter = setCb('beforeFilter'),
@@ -168,12 +170,15 @@
 
             if ($target.tagName === 'TABLE') $target.removeAttribute(initTableAttr);
 
-            if (hlStyle) dehighlight();
+            if (hl) dehighlight();
 
             for (var i = 0; i < $items.length; i++) {
                 if (!useDomFilter) $items[i].removeAttribute(filterAttr);
                 $items[i].removeAttribute(zebraAttr);
             }
+
+            ($wrapper || $input).removeAttribute(hasFilterAttr);
+            ($wrapper || $input).removeAttribute(noMatchAttr);
 
             if ($input.form) $input.form.removeEventListener('reset', self.clear);
             $input.removeEventListener('input', addHandleInput);
@@ -197,13 +202,13 @@
                         $input.removeAttribute(key);
                     }
                     if ($input.id === self.hash) $input.removeAttribute('id');
-                    $input.removeAttribute('data-init-fbx');
+                    $input.removeAttribute(initAttr);
                 }
             }
             $input.value = '';
             if (!input) removeEl($input);
 
-            $target.removeAttribute('data-hide-fbx');
+            $target.removeAttribute(hideAttr);
 
             afterDestroy && afterDestroy();
 
@@ -230,6 +235,11 @@
 
         self.getVisible = function () {
             return self.getTotal() - self.getHidden();
+        };
+
+
+        self.disableHighlight = function () {
+            hl = false;
         };
 
 
@@ -282,7 +292,7 @@
 
 
         function dehighlight(container) {
-            if (!hlStyle) return;
+            if (!hl) return;
 
             if (!container) container = $target;
 
@@ -301,7 +311,7 @@
 
         function highlight(term, $container, filter) {
 
-            if (!hlStyle) return;
+            if (!hl) return;
             if (term.length < hlMinChar) return;
 
             var $allItem = filter ? $container.querySelectorAll(filter) : $container.childNodes;
@@ -518,7 +528,7 @@
                             self.setZebra();
                         } else if (t === 'characterData') {
                             handleFocus(true);
-                            hlStyle && highlight(self.getFilter(), $target, dataSources.join(','));
+                            hl && highlight(self.getFilter(), $target, dataSources.join(','));
                             self.setZebra();
                             self.updateDisplays(target);
                         }
@@ -598,7 +608,6 @@
             var $items = getItems();
 
             for (var i = 0; i < $items.length; i++) {
-
                 var $item = $items[i],
                     data = getContent($item.querySelectorAll(dataSources.join(',')));
 
@@ -607,6 +616,10 @@
                     $item.setAttribute(filterAttr, data.join(' ').trim());
                 }
             }
+
+            // if ($target.tagName === 'TABLE') {
+            //     $target.setAttribute(initTableAttr, '1');
+            // }
 
             $input.setAttribute(initAttr, '1');
         }
@@ -675,12 +688,23 @@
 
             if (beforeFilter && beforeFilter.call(self) === false) return;
 
-            dehighlight($target);
+            ($wrapper || $input).removeAttribute(noMatchAttr);
+
+            if ($input.value) {
+                ($wrapper || $input).setAttribute(hasFilterAttr, '1');
+            } else {
+                ($wrapper || $input).removeAttribute(hasFilterAttr);
+            }
+
+
 
             if (v === '') {
 
                 setStyles('');
                 hideSelector = '';
+
+                hl && dehighlight(self.getVisibleItems());
+
                 afterFilter && afterFilter.call(self);
                 self.updateDisplays(target);
 
@@ -691,20 +715,33 @@
                     $dataSources = dataSources.join(','),
                     $visibleItems;
 
-                if (!terms) return false;
+                if (!terms) {
+                    hl && dehighlight(self.getVisibleItems());
+                    return false;
+                }
 
                 hideSelector = self.getHideSelector(terms);
                 setStyles(hideSelector + '{display:none}');
 
-                if (hlStyle) {
+                $visibleItems = self.getVisibleItems(v);
+
+                if (!$visibleItems.length) {
+                    ($wrapper || $input).setAttribute(noMatchAttr, '1');
+                } else {
+                    ($wrapper || $input).removeAttribute(noMatchAttr);
+                }
+
+                if (hl) {
                     setTimeout(function () {
-                        $visibleItems = self.getVisibleItems(v);
                         for (var i = 0; i < $visibleItems.length; i++) {
+
+                            hl && dehighlight($visibleItems[i]);
+
                             for (var j = 0; j < terms.length; j++) {
                                 highlight(terms[j], $visibleItems[i], $dataSources);
                             }
                         }
-                    }, 0);
+                    }, 100);
                 }
 
                 self.updateDisplays(target);
