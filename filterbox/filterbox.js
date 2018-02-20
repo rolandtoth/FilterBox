@@ -1,5 +1,5 @@
 /**
- * FilterBox v0.3.2
+ * FilterBox v0.3.3
  */
 (function (window, document) {
 
@@ -26,6 +26,7 @@
         while (i < len) hash = ((hash << 5) - hash + str.charCodeAt(i++)) << 0;
         return hash;
     }
+
 
     /**
      * Wrapper to allow return false if the filterbox couldn't be created.
@@ -82,7 +83,7 @@
             $label,
             displays = o.displays && typeof o.displays === 'object' ? o.displays : false,
             $displays = [],
-            suffix = o.suffix ? '-' + o.suffix : '',
+            suffix = o.suffix ? o.suffix : '',
             zebra = o.zebra || false,
             zebraAttr = 'data-odd' + suffix,
             hideAttr = 'data-hide' + suffix,
@@ -115,6 +116,23 @@
         function getItems() {
             return $target.querySelectorAll(items);
         }
+
+
+        self.onetime = function (node, event, callback) {
+
+            var self = this;
+
+            function handler(e) {
+                callback.call(this, e);
+                this.removeEventListener(event, handler);
+                self.added = false;
+            }
+
+            if (!self.added) {
+                node.addEventListener(event, handler);
+                self.added = true;
+            }
+        };
 
 
         self.getTotal = function () {
@@ -238,8 +256,8 @@
         };
 
 
-        self.disableHighlight = function () {
-            hl = false;
+        self.enableHighlight = function (bool) {
+            hl = bool;
         };
 
 
@@ -247,18 +265,13 @@
 
             if (!zebra) return false;
 
-            var $items = getItems(),
+            var $items = self.getVisibleItems($input.value),
                 z = 1;
 
             for (var i = 0; i < $items.length; i++) {
                 var $item = $items[i];
-
-                if (!isHidden($item)) {
-                    $item.setAttribute(zebraAttr, (z % 2).toString());
-                    z++;
-                } else {
-                    $item.removeAttribute(zebraAttr);
-                }
+                $item.setAttribute(zebraAttr, (z % 2));
+                z++;
             }
         };
 
@@ -295,6 +308,8 @@
             if (!hl) return;
 
             if (!container) container = $target;
+
+            if (!container.childNodes) return;
 
             for (var i = 0; i < container.childNodes.length; i++) {
                 var node = container.childNodes[i];
@@ -429,6 +444,7 @@
 
             setAttrs($input, inputAttrs);
 
+
             if (wrapper) {
                 $wrapper = document.createElement(wrapper.tag || 'div');
                 setAttrs($wrapper, wrapperAttrs);
@@ -446,6 +462,10 @@
 
                 _insertBefore($label, $input);
             }
+
+            $input.getFilterBox = function () {
+                return self;
+            };
 
             self.setZebra();
         }
@@ -557,6 +577,11 @@
         };
 
 
+        self.isAllItemsVisible = function () {
+            return self.getHideSelector() === '';
+        };
+
+
         function getTerms(v) {
             if (!v) return false;
 
@@ -588,8 +613,8 @@
         };
 
 
-        self.emptyFilterBox = function (e) {
-            e.preventDefault();
+        self.emptyFilterBox = function () {
+
             if (self.getFilter() !== '') {
                 self.filter('');
             } else {
@@ -672,7 +697,7 @@
                 if (onEscape) {
                     onEscape.call(self, e);
                 } else {
-                    self.emptyFilterBox.call(self, e);
+                    self.emptyFilterBox();
                 }
             }
 
@@ -697,16 +722,14 @@
             }
 
 
-
             if (v === '') {
 
                 setStyles('');
                 hideSelector = '';
 
                 hl && dehighlight(self.getVisibleItems());
-
-                afterFilter && afterFilter.call(self);
                 self.updateDisplays(target);
+                afterFilter && afterFilter.call(self);
 
             } else {
 
@@ -716,7 +739,11 @@
                     $visibleItems;
 
                 if (!terms) {
+                    setStyles('');
+                    hideSelector = '';
                     hl && dehighlight(self.getVisibleItems());
+                    self.updateDisplays(target);
+                    afterFilter && afterFilter.call(self);
                     return false;
                 }
 
@@ -745,6 +772,7 @@
                 }
 
                 self.updateDisplays(target);
+                self.setZebra();
                 afterFilter && afterFilter.call(self);
             }
 
@@ -754,7 +782,7 @@
 
         self.getHideSelector = function (terms, invert) {
 
-            if (!terms.length) return '';
+            terms = terms || $input.value;
 
             var selector = [];
 
@@ -797,7 +825,7 @@
 
 
         self.getVisibleItems = function (v) {
-            return v ? document.querySelectorAll(self.getHideSelector(getTerms(v), true)) : false;
+            return v ? document.querySelectorAll(self.getHideSelector(getTerms(v), true)) : getItems();
         };
 
 
