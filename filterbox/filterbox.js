@@ -1,5 +1,5 @@
 /**
- * FilterBox v0.3.3
+ * FilterBox v0.3.4
  */
 (function (window, document) {
 
@@ -614,17 +614,12 @@
 
 
         self.clearFilterBox = function () {
-
-            if (self.getFilter() !== '') {
-                self.filter('');
-                setStyles('');
-                hideSelector = '';
-                hl && dehighlight(self.getTarget());
-                self.updateDisplays(target);
-                afterFilter && afterFilter.call(self);
-            } else {
-                $input.blur();
-            }
+            $input.value = '';
+            setStyles('');
+            hideSelector = '';
+            hl && dehighlight(self.getTarget());
+            self.updateDisplays(target);
+            afterFilter && afterFilter.call(self);
         };
 
 
@@ -701,7 +696,12 @@
                 if (onEscape) {
                     onEscape.call(self, e);
                 } else {
-                    self.clearFilterBox();
+                    e.preventDefault();
+                    if (self.getFilter() !== '') {
+                        self.clearFilterBox();
+                    } else {
+                        $input.blur();
+                    }
                 }
             }
 
