@@ -613,14 +613,18 @@
         };
 
 
-        self.emptyFilterBox = function () {
+        self.clearFilterBox = function () {
 
             if (self.getFilter() !== '') {
                 self.filter('');
+                setStyles('');
+                hideSelector = '';
+                hl && dehighlight(self.getTarget());
+                self.updateDisplays(target);
+                afterFilter && afterFilter.call(self);
             } else {
                 $input.blur();
             }
-            // return false;
         };
 
 
@@ -697,7 +701,7 @@
                 if (onEscape) {
                     onEscape.call(self, e);
                 } else {
-                    self.emptyFilterBox();
+                    self.clearFilterBox();
                 }
             }
 
@@ -724,12 +728,7 @@
 
             if (v === '') {
 
-                setStyles('');
-                hideSelector = '';
-
-                hl && dehighlight(self.getVisibleItems());
-                self.updateDisplays(target);
-                afterFilter && afterFilter.call(self);
+                self.clearFilterBox();
 
             } else {
 
@@ -739,11 +738,7 @@
                     $visibleItems;
 
                 if (!terms) {
-                    setStyles('');
-                    hideSelector = '';
-                    hl && dehighlight(self.getVisibleItems());
-                    self.updateDisplays(target);
-                    afterFilter && afterFilter.call(self);
+                    self.clearFilterBox();
                     return false;
                 }
 
