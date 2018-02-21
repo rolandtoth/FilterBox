@@ -257,7 +257,7 @@
 
 
         self.enableHighlight = function (bool) {
-            hl = bool;
+            hl = bool === false;
         };
 
 
