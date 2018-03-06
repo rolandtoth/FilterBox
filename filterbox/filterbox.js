@@ -1,5 +1,5 @@
 /**
- * FilterBox v0.3.4
+ * FilterBox v0.3.5
  */
 (function (window, document) {
 
@@ -85,10 +85,10 @@
             $displays = [],
             suffix = o.suffix ? o.suffix : '',
             zebra = o.zebra || false,
+            lazy = o.lazy === false,
             zebraAttr = 'data-odd' + suffix,
             hideAttr = 'data-hide' + suffix,
             initAttr = 'data-init' + suffix,
-            initTableAttr = 'data-init-table' + suffix,
             hasFilterAttr = 'data-has-filter' + suffix,
             noMatchAttr = 'data-no-match' + suffix,
             filterAttr = o.filterAttr || 'data-filter' + suffix,
@@ -110,30 +110,13 @@
             hlMinChar = hl && hl.minChar ? hl.minChar : 2,
             hiddenStyle = '[' + hideAttr + '="1"]' + '{display:none}',
             init = false,
+            initTableColumns = false,
             observer;
 
 
         function getItems() {
             return $target.querySelectorAll(items);
         }
-
-
-        self.onetime = function (node, event, callback) {
-
-            var self = this;
-
-            function handler(e) {
-                callback.call(this, e);
-                this.removeEventListener(event, handler);
-                self.added = false;
-            }
-
-            if (!self.added) {
-                node.addEventListener(event, handler);
-                self.added = true;
-            }
-        };
-
 
         self.getTotal = function () {
             return getItems().length;
@@ -186,9 +169,8 @@
             if (!init) return;
             if (beforeDestroy && beforeDestroy.call(self) === false) return;
 
-            if ($target.tagName === 'TABLE') $target.removeAttribute(initTableAttr);
-
             if (hl) dehighlight();
+
 
             for (var i = 0; i < $items.length; i++) {
                 if (!useDomFilter) $items[i].removeAttribute(filterAttr);
@@ -199,10 +181,24 @@
             ($wrapper || $input).removeAttribute(noMatchAttr);
 
             if ($input.form) $input.form.removeEventListener('reset', self.clear);
+
             $input.removeEventListener('input', addHandleInput);
             $input.removeEventListener('focus', handleFocus);
             $input.removeEventListener('keydown', handleKeydown);
+
             document.removeEventListener('filterboxsearch', addFilterBoxSearch);
+
+            window.removeEventListener('resize', _fixTableColumns);
+            initTableColumns = false;
+
+            if ($target.tagName === 'TABLE') {
+                var $headers = $target.querySelectorAll('th');
+
+                for (var i = 0; i < $headers.length; i++) {
+                    $headers[i].removeAttribute('style');
+                }
+            }
+
             if (observer) observer.disconnect();
 
             for (var k = 0; k < $displays.length; k++) removeEl($displays[k].el);
@@ -599,17 +595,21 @@
         }
 
 
-        self.fixTableColumns = function ($table) {
-
-            if (!$table) return;
-
-            var $headers = $table.querySelectorAll('th');
+        var _fixTableColumns = debounce(function () {
+            var $headers = self.getTarget().querySelectorAll('th');
 
             for (var i = 0; i < $headers.length; i++) {
                 $headers[i].style.width = $headers[i].offsetWidth + 'px';
             }
+        }, 500);
 
-            $table.setAttribute(initTableAttr, '1');
+
+        self.fixTableColumns = function ($table) {
+            _fixTableColumns($table);
+            if(!initTableColumns) {
+                window.addEventListener('resize', _fixTableColumns);
+                initTableColumns = true;
+            }
         };
 
 
@@ -640,10 +640,6 @@
                     $item.setAttribute(filterAttr, data.join(' ').trim());
                 }
             }
-
-            // if ($target.tagName === 'TABLE') {
-            //     $target.setAttribute(initTableAttr, '1');
-            // }
 
             $input.setAttribute(initAttr, '1');
         }
@@ -871,6 +867,10 @@
         addMarkup();
         addDisplays();
         addEvents();
+
+        if (lazy) {
+            handleFocus();
+        }
 
         init = true;
 
