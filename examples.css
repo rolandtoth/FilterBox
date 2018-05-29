@@ -1,0 +1,107 @@
+* {
+    box-sizing: border-box;
+}
+
+html {
+    overflow-y: scroll;
+    padding: 2rem;
+    width: 100vw;
+    overflow-x: hidden;
+}
+
+body {
+    margin: 0;
+}
+
+.filterbox-wrap {
+    background: rgb(98, 136, 154);
+    height: 4rem;
+    padding-top: 0.84rem;
+    margin: -2rem -2rem 1rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    color: white;
+    backface-visibility: hidden;
+}
+
+input {
+    padding: 0.7rem 1.2rem;
+    width: 300px;
+    margin: 0 0.7rem;
+    outline: none;
+    border: none;
+    font-size: 0.9rem;
+    background: rgba(255, 255, 255, 0.9);
+}
+
+[data-has-filter-mysuffix="1"] input,
+input:focus {
+    background: white;
+}
+
+[data-no-match-mysuffix="1"] input {
+    color: #f44336;
+}
+
+[data-odd-mysuffix="1"] {
+    background: #f8f8f8;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    font-weight: 700;
+    text-align: left;
+}
+
+th, td {
+    vertical-align: top;
+    padding: 0.33rem 0.5rem;
+    border-bottom: 1px solid #e4e4e4;
+}
+
+.no-results {
+    text-align: center;
+    margin: 2rem 0;
+}
+
+body.basic input {
+    border: 1px solid #bbb;
+    padding: 0.64rem 1rem;
+    margin-bottom: 1rem;
+}
+
+body.advanced th {
+    box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+    position: sticky;
+    top: 4rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+    backface-visibility: hidden;
+    background: white;
+}
+body.advanced .counter {
+    position: absolute;
+    margin-top: 10px;
+}
+
+::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0, 0.2);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0, 0.4);
+}
