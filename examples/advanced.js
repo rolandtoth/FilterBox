@@ -2,7 +2,8 @@ var myFilterBox = addFilterBox({
     target: {
         selector: '.world-countries',
         items: 'tbody tr',
-        sources:  [
+        sources: [
+            'td:nth-child(1)',
             'td:nth-child(3)'
         ]
     },
@@ -11,9 +12,9 @@ var myFilterBox = addFilterBox({
         position: 'before'
     },
     input: {
-        label: 'Capital: ',
+        label: 'Search: ',
         attrs: {
-            placeholder: 'Search...'
+            placeholder: 'Enter name or capital...'
         }
     },
     wrapper: {
@@ -42,6 +43,9 @@ var myFilterBox = addFilterBox({
                 selector: '.world-countries',
                 position: 'after'
             },
+            attrs: {
+                class: 'no-results'
+            },
             text: function () {
                 return !this.getVisible() ? 'Sorry, no matching item for "' + this.getFilter() + '"' : '';
             }
@@ -51,6 +55,13 @@ var myFilterBox = addFilterBox({
         onReady: onFilterBoxReady,
         afterFilter: function () {
             this.toggleHide(this.getTarget(), this.isAllItemsHidden());
+        },
+        onEnter: function () {
+            var $firstItem = this.getFirstVisibleItem();
+
+            if ($firstItem) {
+                alert('First visible item: ' + $firstItem.querySelector('td').textContent + '\n(onEnter callback)');
+            }
         }
     },
     highlight: {
@@ -58,17 +69,18 @@ var myFilterBox = addFilterBox({
         minChar: 3
     },
     filterAttr: 'data-filter',
-    suffix: 'my-filterbox',
+    suffix: '-mysuffix',
     debuglevel: 2,
     inputDelay: 100,
     zebra: true,
-    useObserver: false,
+    enableObserver: true,
+    initTableColumns: true,
     useDomFilter: false
 });
 
 
 function onFilterBoxReady() {
     this.fixTableColumns(this.getTarget());
-    this.filter('bras');
+    this.filter('bra');
     this.focus(true);
 }

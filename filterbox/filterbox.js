@@ -1,5 +1,5 @@
 /**
- * FilterBox v0.3.5
+ * FilterBox v0.3.6
  */
 (function (window, document) {
 
@@ -129,7 +129,7 @@
 
         self.update = function () {
             handleFocus(true);
-            updateDisplays(target);
+            updateDisplays();
             self.setZebra();
         };
 
@@ -266,7 +266,7 @@
 
             for (var i = 0; i < $items.length; i++) {
                 var $item = $items[i];
-                $item.setAttribute(zebraAttr, (z % 2));
+                $item.setAttribute(zebraAttr, (z % 2).toString());
                 z++;
             }
         };
@@ -413,11 +413,9 @@
         };
 
 
-        self.updateDisplays = function (tgt) {
-            if (tgt === target) {
+        self.updateDisplays = function () {
                 for (var i = 0; i < $displays.length; i++) {
                     $displays[i].el.innerHTML = $displays[i].text.call(self);
-                }
             }
         };
 
@@ -510,12 +508,12 @@
                 }
             }
 
-            self.updateDisplays(target);
+            self.updateDisplays();
         }
 
 
-        function addFilterBoxSearch(e) {
-            self.updateDisplays(e.detail.target);
+        function addFilterBoxSearch() {
+            self.updateDisplays();
             self.setZebra();
         }
 
@@ -540,13 +538,13 @@
                     for (var i = 0; i < mutationsList.length; i++) {
                         var t = mutationsList[i].type;
                         if (t === 'childList') {
-                            self.updateDisplays(target);
+                            self.updateDisplays();
                             self.setZebra();
                         } else if (t === 'characterData') {
                             handleFocus(true);
                             hl && highlight(self.getFilter(), $target, dataSources.join(','));
                             self.setZebra();
-                            self.updateDisplays(target);
+                            self.updateDisplays();
                         }
                     }
                 });
@@ -606,7 +604,7 @@
 
         self.fixTableColumns = function ($table) {
             _fixTableColumns($table);
-            if(!initTableColumns) {
+            if (!initTableColumns) {
                 window.addEventListener('resize', _fixTableColumns);
                 initTableColumns = true;
             }
@@ -617,8 +615,8 @@
             $input.value = '';
             setStyles('');
             hideSelector = '';
-            hl && dehighlight(self.getTarget());
-            self.updateDisplays(target);
+            hl && dehighlight($target);
+            self.updateDisplays();
             afterFilter && afterFilter.call(self);
         };
 
@@ -650,32 +648,32 @@
             var $firstItem = self.getFirstVisibleItem(),
                 $link;
 
+            if (!$firstItem) return false;
+
             if (self.getFilter() === '') {
                 window.localStorage && localStorage.removeItem(self.hash);
-                // return false;
             }
 
-            if ($firstItem.tagName === 'A' || $firstItem.querySelector('a')) {
+            if ($firstItem.tagName === 'A') {
+                $link = $firstItem;
+            }
+            else if ($firstItem.querySelector('a')) {
+                $link = $firstItem.querySelector('a');
+            }
+
+            if ($link) {
                 e.preventDefault();
 
-                if ($firstItem.tagName === 'A') {
-                    $link = $firstItem;
-                } else if ($firstItem.querySelector('a')) {
-                    $link = $firstItem.querySelector('a');
+                if (forceNewTab && $link.getAttribute('target') !== '_blank') {
+                    $link.setAttribute('target', '_blank');
+                    $link.click();
+                    $link.removeAttribute('target');
+                } else {
+                    $link.click();
                 }
 
-                if ($link) {
-                    if (forceNewTab && $link.getAttribute('target') !== '_blank') {
-                        $link.setAttribute('target', '_blank');
-                        $link.click();
-                        $link.removeAttribute('target');
-                    } else {
-                        $link.click();
-                    }
-
-                    if (window.localStorage) {
-                        localStorage.setItem(self.hash, self.getFilter());
-                    }
+                if (window.localStorage) {
+                    localStorage.setItem(self.hash, self.getFilter());
                 }
             } else {
                 window.localStorage && localStorage.removeItem(self.hash);
@@ -722,50 +720,43 @@
             }
 
 
-            if (v === '') {
+            // do the filter
+            var terms = getTerms(v),
+                $dataSources = dataSources.join(','),
+                $visibleItems;
 
+            if (!terms) {
                 self.clearFilterBox();
-
-            } else {
-
-                // do the filter
-                var terms = getTerms(v),
-                    $dataSources = dataSources.join(','),
-                    $visibleItems;
-
-                if (!terms) {
-                    self.clearFilterBox();
-                    return false;
-                }
-
-                hideSelector = self.getHideSelector(terms);
-                setStyles(hideSelector + '{display:none}');
-
-                $visibleItems = self.getVisibleItems(v);
-
-                if (!$visibleItems.length) {
-                    ($wrapper || $input).setAttribute(noMatchAttr, '1');
-                } else {
-                    ($wrapper || $input).removeAttribute(noMatchAttr);
-                }
-
-                if (hl) {
-                    setTimeout(function () {
-                        for (var i = 0; i < $visibleItems.length; i++) {
-
-                            hl && dehighlight($visibleItems[i]);
-
-                            for (var j = 0; j < terms.length; j++) {
-                                highlight(terms[j], $visibleItems[i], $dataSources);
-                            }
-                        }
-                    }, 100);
-                }
-
-                self.updateDisplays(target);
-                self.setZebra();
-                afterFilter && afterFilter.call(self);
+                return false;
             }
+
+            hideSelector = self.getHideSelector(terms);
+            setStyles(hideSelector + '{display:none}');
+
+            $visibleItems = self.getVisibleItems(v);
+
+            if (!$visibleItems.length) {
+                ($wrapper || $input).setAttribute(noMatchAttr, '1');
+            } else {
+                ($wrapper || $input).removeAttribute(noMatchAttr);
+            }
+
+            if (hl) {
+                setTimeout(function () {
+                    for (var i = 0; i < $visibleItems.length; i++) {
+
+                        hl && dehighlight($visibleItems[i]);
+
+                        for (var j = 0; j < terms.length; j++) {
+                            highlight(terms[j], $visibleItems[i], $dataSources);
+                        }
+                    }
+                }, 100);
+            }
+
+            self.updateDisplays();
+            self.setZebra();
+            afterFilter && afterFilter.call(self);
 
             document.dispatchEvent(new CustomEvent('filterboxsearch', {detail: self}));
         }
@@ -794,11 +785,12 @@
 
         self.count = function (v) {
 
-            var terms = getTerms(v);
+            var terms = getTerms(v),
+                selector;
 
             if (!v || !terms) return self.getTotal();
 
-            var selector = self.getHideSelector(terms);
+            selector = self.getHideSelector(terms);
 
             return self.getTotal() - document.querySelectorAll(selector).length;
         };

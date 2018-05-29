@@ -5,8 +5,8 @@ FilterBox is a pure JavaScript utility to filter (search) DOM nodes.
 ## Features
 
 - fast CSS-based filtering
-- restrict filtering to specific nodes (eg. table columns)
 - highlight search terms
+- restrict filtering to specific nodes (eg. table columns)
 - apply to existing DOM input field or add new
 - create any number of displays (counters, status texts, etc)
 - fine-grained control over created nodes (tag, attributes, DOM position)
@@ -16,6 +16,22 @@ FilterBox is a pure JavaScript utility to filter (search) DOM nodes.
 - force zebra stripe background
 - lazy init (only on first input focus)
 - no dependencies
+
+
+## How FilterBox works
+
+FilterBox adds a HTML input to the DOM to filter elements inside a target DOM container.
+
+On first focus on the input will add `data-filterbox` attributes to the items and fill them with their textual contents.
+
+When typing into the input FilterBox updates a CSS style block in the HTML head that will hide or show items in the main items.
+
+This search method is very fast because only one DOM element needs to be updated on each keystroke, even if there are hundreds or thousands of items to filter.
+
+**Notes:**
+
+- browsers will render results slower if the amount of items is very large
+- FilterBox has a highlight feature that doesn't play nicely with large data so you may need to disable it when experiencing issues
 
 
 ## Terminology
@@ -36,22 +52,6 @@ FilterBox is a pure JavaScript utility to filter (search) DOM nodes.
 | wrapper | node to wrap the main input (eg. for easier CSS styling). | -
 | label | Label node to insert before the main input. | -
 | displays | Additional nodes to add to the DOM, eg. counters, status messages, etc. | -
-
-
-## How FilterBox works
-
-FilterBox adds a HTML input to the DOM to filter elements inside a target DOM container.
-
-On first focus on the input will add `data-filterbox` attributes to the items and fill them with their textual contents.
-
-When typing into the input FilterBox updates a CSS style block in the HTML head that will hide or show items in the main items.
-
-This search method is very fast because only one DOM element needs to be updated on each keystroke, even if there are hundreds or thousands of items to filter.
-
-**Notes:**
-
-- browsers will render results slower if the amount of items is very large
-- FilterBox has a highlight feature that doesn't play nicely with large data so you may need to disable it when experiencing issues
 
 
 ## Getting Started
@@ -187,15 +187,21 @@ An object containing the callback functions, see the Callbacks section below.
 
 ### debuglevel
 
-If your FilterBox doesn't show up, set this option to 1 for a simple or 2 for a detailed info that prevented FilterBox to start. The messages will appear in the developer tools console.
+If your FilterBox doesn't show up, set this option to 1 for a simple or 2 for a detailed info that prevented FilterBox to start.
+
+The messages will appear in the developer tools console.
 
 ### displays
 
 Displays are DOM elements created by FilterBox where you can dynamically modify text. Suitable for example counters, no-result messages, etc.
 
-Each display can be set az an object where you can set `tag`, `attrs`, `addTo` and `text` (see above for the explanations). Their names are irrelevant, eg. "counter" in `counter: {...}` is only used to make it easier to identify them in the code.
+Each display can be set az an object where you can set `tag`, `attrs`, `addTo` and `text` (see above for the explanations).
 
-The `text` property need to be a function and return a value. Here you can use FilterBox methods to get data from the  FilterBox instance, eg. `this.getVisible()` will return the number of actual visible items, that is, the number of found results. See the "Methods" section below.
+Their names are irrelevant, eg. "counter" in `counter: {...}` is only used to make it easier to identify them in the code.
+
+The `text` property need to be a function and return a value.
+
+Here you can use FilterBox methods to get data from the  FilterBox instance, eg. `this.getVisible()` will return the number of actual visible items, that is, the number of found results. See the "Methods" section below.
 
 You can set as many displays as you need.
 
@@ -214,9 +220,13 @@ If present, FilterBox will highlight the searched term in the main target.
 
 ### input
 
-The input element to enter search terms. This can be an existing node or a new one that FilterBox creates. If you set a CSS selector (`selector`) here and such element is available in the DOM, FilterBox will use that, otherwise adds a new one.
+The input element to enter search terms. This can be an existing node or a new one that FilterBox creates.
 
-You can set attributes for the input with the `attrs` object. Each property of the object will be added to the input, eg. setting `class: "form-input large"` will add two classes, `autocomplete: "off"` will set autocomplete off, and so on.
+If you set a CSS selector (`selector`) here and such element is available in the DOM, FilterBox will use that, otherwise adds a new one.
+
+You can set attributes for the input with the `attrs` object.
+
+Each property of the object will be added to the input, eg. setting `class: "form-input large"` will add two classes, `autocomplete: "off"` will set autocomplete off, and so on.
 
 Optionally you can set a `label` property for the input to prepend a label DOM node to the main input.
 
@@ -233,9 +243,15 @@ Here you can set a suffix that will be appended to varius data-attributes Filter
 
 Here you can define where to search. 
 
-`selector` is a CSS selector of the DOM node, `items` is also a CSS selector to set the items you would like to show/hide. An optional `sources` array can also be set, containing CSS selectors defining the nodes where FilterBox actually searches. If `sources` are not set, all text will be used inside `items`.
+`selector` is a CSS selector of the DOM node, `items` is also a CSS selector to set the items you would like to show/hide.
 
-If you you would like to filter a table, the target `selector` could be table.world-countries", `items` could be "tbody tr". `sources` could be omitted but if you would like to search in eg. the second column you could set it to `[tr td:nth-child(2)]`.
+An optional `sources` array can also be set, containing CSS selectors defining the nodes where FilterBox actually searches.
+
+If `sources` are not set, all text will be used inside `items`.
+
+If you would like to filter a table, the target `selector` could be table.world-countries", `items` could be "tbody tr".
+
+`sources` could be omitted but if you would like to search in eg. the second column you could set it to `[tr td:nth-child(2)]`.
 
 ### useDomFilter
 
@@ -243,7 +259,7 @@ FilterBox adds data-filter attributes automatically and fills with text found in
 
 This can be handy if you would like to filter items differently, eg. adding tags with a backend language, etc.
 
-You will also need to adjust the `filterAttr` to match you attribute name.
+You will also need to adjust the `filterAttr` to match your attribute's name.
 
 ### zebra
 
@@ -366,6 +382,7 @@ Callbacks run when a certain event happens in the FilterBox instance, eg. when i
 
 In callbacks `onInit`, `beforeFilter` and `beforeDestroy` if your function returns false, FilterBox will stop. For example you can prevent creating a FilterBox instance if a certain condition is met with `onInit` (eg. the main target contains only 5 items), or prevent further filtering in `beforeFilter`, eg. if the current search term is "bazinga".
 
+
 ## Events
 
 Currently there is only one event called `filterboxsearch` that is emitted on the document after each filter.
@@ -378,6 +395,7 @@ document.addEventListener('filterboxsearch', function(e) {
 });
 ```
 
+
 ## MutationObserver
 
 When setting `enableObserver` to true, all FilterBox displays will react if the number of the items or their text changes.
@@ -385,6 +403,24 @@ When setting `enableObserver` to true, all FilterBox displays will react if the 
 Eg. if another scripts removes some rows from the target table, a counter will be automatically updated to show the correct number of visible or total items.
 
 Or you have filtered for "spaghetti" and a script adds more "spaghetti"'s to other items, those will be automatically visible too.
+
+
+## Status attributes
+
+The following attributes are toggled dynamically based on the current filtering state for easier CSS styling.
+
+### data-has-filter
+
+If the filterbox is not empty the input (or the wrapper, if available) will get a `data-has-filter` attribute with value "1".
+
+Can be used eg. to highlight the main input to indicate that filtering is active. Unlike CSS ":focus" this will be kept even after leaving the input.
+
+### data-no-match
+
+If there's no match the input (or the wrapper, if available) will get a `data-no-match` attribute with value "1".
+
+Can be used eg. to add a red background color or outline.
+
 
 ## Contributing
 
