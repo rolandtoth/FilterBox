@@ -414,8 +414,8 @@
 
 
         self.updateDisplays = function () {
-                for (var i = 0; i < $displays.length; i++) {
-                    $displays[i].el.innerHTML = $displays[i].text.call(self);
+            for (var i = 0; i < $displays.length; i++) {
+                $displays[i].el.innerHTML = $displays[i].text.call(self);
             }
         };
 
@@ -612,6 +612,7 @@
 
 
         self.clearFilterBox = function () {
+            ($wrapper || $input).removeAttribute(noMatchAttr);
             $input.value = '';
             setStyles('');
             hideSelector = '';
@@ -711,13 +712,7 @@
 
             if (beforeFilter && beforeFilter.call(self) === false) return;
 
-            ($wrapper || $input).removeAttribute(noMatchAttr);
-
-            if ($input.value) {
-                ($wrapper || $input).setAttribute(hasFilterAttr, '1');
-            } else {
-                ($wrapper || $input).removeAttribute(hasFilterAttr);
-            }
+            ($wrapper || $input).setAttribute(hasFilterAttr, (v ? '1' : '0'));
 
 
             // do the filter
@@ -727,31 +722,28 @@
 
             if (!terms) {
                 self.clearFilterBox();
-                return false;
-            }
 
-            hideSelector = self.getHideSelector(terms);
-            setStyles(hideSelector + '{display:none}');
-
-            $visibleItems = self.getVisibleItems(v);
-
-            if (!$visibleItems.length) {
-                ($wrapper || $input).setAttribute(noMatchAttr, '1');
             } else {
-                ($wrapper || $input).removeAttribute(noMatchAttr);
-            }
 
-            if (hl) {
-                setTimeout(function () {
-                    for (var i = 0; i < $visibleItems.length; i++) {
+                hideSelector = self.getHideSelector(terms);
+                setStyles(hideSelector + '{display:none}');
 
-                        hl && dehighlight($visibleItems[i]);
+                $visibleItems = self.getVisibleItems(v);
 
-                        for (var j = 0; j < terms.length; j++) {
-                            highlight(terms[j], $visibleItems[i], $dataSources);
+                ($wrapper || $input).setAttribute(noMatchAttr, (!$visibleItems.length ? '1' : '0'));
+
+                if (hl) {
+                    setTimeout(function () {
+                        for (var i = 0; i < $visibleItems.length; i++) {
+
+                            hl && dehighlight($visibleItems[i]);
+
+                            for (var j = 0; j < terms.length; j++) {
+                                highlight(terms[j], $visibleItems[i], $dataSources);
+                            }
                         }
-                    }
-                }, 100);
+                    }, 100);
+                }
             }
 
             self.updateDisplays();
