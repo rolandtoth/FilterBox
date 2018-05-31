@@ -14,7 +14,7 @@ var myFilterBox = addFilterBox({
     input: {
         label: 'Search: ',
         attrs: {
-            placeholder: 'Enter name or capital...'
+            placeholder: 'Enter country or capital...'
         }
     },
     wrapper: {
@@ -47,7 +47,7 @@ var myFilterBox = addFilterBox({
                 class: 'no-results'
             },
             text: function () {
-                return !this.getVisible() ? 'Sorry, no matching item for "' + this.getFilter() + '"' : '';
+                return !this.getVisible() ? 'No matching country or capital for "' + this.getFilter() + '"' : '' . '.';
             }
         }
     },
