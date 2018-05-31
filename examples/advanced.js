@@ -47,7 +47,7 @@ var myFilterBox = addFilterBox({
                 class: 'no-results'
             },
             text: function () {
-                return !this.getVisible() ? ('No matching country or capital for "' + this.getFilter() + '"' : '') . '.';
+                return !this.getVisible() ? ('No matching country or capital for "' + this.getFilter() + '"' : '') + '.';
             }
         }
     },
