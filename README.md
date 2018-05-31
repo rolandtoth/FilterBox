@@ -2,6 +2,8 @@
 
 FilterBox is a pure JavaScript utility to filter (search) DOM nodes.
 
+[Demo](https://raw.githack.com/rolandtoth/FilterBox/master/examples/advanced.html)
+
 ## Features
 
 - fast CSS-based filtering
