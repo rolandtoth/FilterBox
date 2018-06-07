@@ -2,7 +2,7 @@
 
 FilterBox is a pure JavaScript utility to filter (search) DOM nodes.
 
-[Demo](https://rawcdn.githack.com/rolandtoth/FilterBox/17d9fac/examples/advanced.html)
+[View Demo](https://rawcdn.githack.com/rolandtoth/FilterBox/689da57/examples/advanced.html)
 
 ## Features
 
