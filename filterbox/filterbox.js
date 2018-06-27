@@ -644,7 +644,7 @@
         }
 
 
-        self.visitFirstLink = function (e, forceNewTab) {
+        self.visitFirstLink = debounce(function (e, forceNewTab) {
 
             var $firstItem = self.getFirstVisibleItem(),
                 $link;
@@ -679,7 +679,7 @@
             } else {
                 window.localStorage && localStorage.removeItem(self.hash);
             }
-        };
+        }, inputDelay);
 
 
         function handleKeydown(e) {
