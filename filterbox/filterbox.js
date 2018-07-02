@@ -1,8 +1,7 @@
 /**
- * FilterBox v0.3.6
+ * FilterBox v0.3.7
  */
 (function (window, document) {
-
     'use strict';
 
     // CustomEvent polyfill
@@ -20,13 +19,11 @@
         window.CustomEvent = CustomEvent;
     })();
 
-
     function hashCode(str) {
         var hash = 0, i = 0, len = str.length;
         while (i < len) hash = ((hash << 5) - hash + str.charCodeAt(i++)) << 0;
         return hash;
     }
-
 
     /**
      * Wrapper to allow return false if the filterbox couldn't be created.
@@ -46,23 +43,19 @@
         }
     };
 
-
     function FilterBox(o) {
-
+        
         if (!o.target || !o.target.selector || !o.target.items || !document.querySelector(o.target.selector + ' ' + o.target.items)) {
             throw new Error('FilterBox: no items to filter');
         }
-
 
         if (o.callbacks && typeof o.callbacks.onInit === 'function' && o.callbacks.onInit() === false) {
             throw new Error('FilterBox: onInit callback');
         }
 
-
         function setCb(n) {
             return o.callbacks && typeof o.callbacks[n] === 'function' ? o.callbacks[n] : false;
         }
-
 
         var self = this,
             target = o.target.selector,
@@ -113,19 +106,16 @@
             initTableColumns = false,
             observer;
 
-
         function getItems() {
             return $target.querySelectorAll(items);
         }
 
-        self.getTotal = function () {
+        self.countTotal = function () {
             return getItems().length;
         };
 
-
         $items = getItems();
-        self.hash = 'fbx' + hashCode(target + items + self.getTotal() + suffix);
-
+        self.hash = 'fbx' + hashCode(target + items + self.countTotal() + suffix);
 
         self.update = function () {
             handleFocus(true);
@@ -133,16 +123,13 @@
             self.setZebra();
         };
 
-
         self.getTarget = function () {
             return $target;
         };
 
-
         self.getInput = function () {
             return $input;
         };
-
 
         function unwrap(wrapper) {
             var docFrag = document.createDocumentFragment();
@@ -153,19 +140,15 @@
             wrapper.parentNode.replaceChild(docFrag, wrapper);
         }
 
-
         function removeEl($el) {
             $el && $el.parentNode && $el.parentNode.removeChild($el);
         }
-
 
         self.clear = function () {
             self.filter('');
         };
 
-
         self.destroy = function () {
-
             if (!init) return;
             if (beforeDestroy && beforeDestroy.call(self) === false) return;
 
@@ -229,11 +212,9 @@
             init = false;
         };
 
-
         function isHidden(el) {
-            return (el.offsetParent === null);
+            return el.offsetParent === null;
         }
-
 
         self.getHidden = function () {
             var hidden = 0,
@@ -246,19 +227,15 @@
             return hidden;
         };
 
-
-        self.getVisible = function () {
-            return self.getTotal() - self.getHidden();
+        self.countVisible = function () {
+            return self.countTotal() - self.getHidden();
         };
-
 
         self.enableHighlight = function (bool) {
             hl = bool === false;
         };
 
-
         self.setZebra = function () {
-
             if (!zebra) return false;
 
             var $items = self.getVisibleItems($input.value),
@@ -271,14 +248,12 @@
             }
         };
 
-
         self.filter = function (v) {
             $input.value = v;
             handleFocus();
             handleInput();
             return self;
         };
-
 
         self.focus = function (moveToEnd) {
             $input.focus();
@@ -291,7 +266,6 @@
             return self;
         };
 
-
         function createNode(child) {
             var node = document.createElement(hlTag);
             node.classList.add(hlClass);
@@ -299,12 +273,9 @@
             return node;
         }
 
-
         function dehighlight(container) {
             if (!hl) return;
-
             if (!container) container = $target;
-
             if (!container.childNodes) return;
 
             for (var i = 0; i < container.childNodes.length; i++) {
@@ -319,9 +290,7 @@
             }
         }
 
-
         function highlight(term, $container, filter) {
-
             if (!hl) return;
             if (term.length < hlMinChar) return;
 
@@ -353,7 +322,6 @@
             }
         }
 
-
         function debounce(func, wait, immediate) {
             var timeout;
             return function () {
@@ -371,16 +339,13 @@
             };
         }
 
-
         function _insertBefore($el, $referenceNode) {
             $referenceNode.parentNode.insertBefore($el, $referenceNode);
         }
 
-
         function _insertAfter($el, $referenceNode) {
             $referenceNode.parentNode.insertBefore($el, $referenceNode.nextSibling);
         }
-
 
         function setStyles(css) {
             var s = document.getElementById(styleId);
@@ -396,7 +361,6 @@
             s.innerText = css + hlStyle + hiddenStyle;
         }
 
-
         function setAttrs(el, attrs) {
             if (el && attrs && typeof attrs === 'object') {
                 for (var key in attrs) {
@@ -407,11 +371,9 @@
             }
         }
 
-
         self.getFilter = function () {
             return $input.value;
         };
-
 
         self.updateDisplays = function () {
             for (var i = 0; i < $displays.length; i++) {
@@ -419,15 +381,12 @@
             }
         };
 
-
         function wrap(el, wrapper) {
             el.parentNode.insertBefore(wrapper, el);
             wrapper.appendChild(el);
         }
 
-
         function addMarkup() {
-
             if (input && document.querySelector(input)) {
                 $input = document.querySelector(input);
             } else {
@@ -437,7 +396,6 @@
             }
 
             setAttrs($input, inputAttrs);
-
 
             if (wrapper) {
                 $wrapper = document.createElement(wrapper.tag || 'div');
@@ -464,7 +422,6 @@
             self.setZebra();
         }
 
-
         function insertDom($el, $to, where) {
             if (!$el || !$to) return false;
             switch (where) {
@@ -481,7 +438,6 @@
                     _insertBefore($el, $to);
             }
         }
-
 
         function addDisplays() {
             if (!displays) return false;
@@ -504,27 +460,21 @@
                         el: $display,
                         text: text
                     });
-
                 }
             }
-
             self.updateDisplays();
         }
-
 
         function addFilterBoxSearch() {
             self.updateDisplays();
             self.setZebra();
         }
 
-
         var addHandleInput = debounce(function () {
             handleInput();
         }, inputDelay);
 
-
         function addEvents() {
-
             $input.addEventListener('focus', handleFocus);
             $input.addEventListener('keydown', handleKeydown);
             $input.addEventListener('input', addHandleInput);
@@ -552,7 +502,6 @@
             }
         }
 
-
         self.toggleHide = function ($el, hide) {
             if ($el) {
                 if ($el.length) {
@@ -565,16 +514,13 @@
             }
         };
 
-
         self.isAllItemsHidden = function () {
             return self.count(self.getFilter()) === 0;
         };
 
-
         self.isAllItemsVisible = function () {
-            return self.getHideSelector() === '';
+            return self.getHiddenSelector() === '';
         };
-
 
         function getTerms(v) {
             if (!v) return false;
@@ -585,13 +531,11 @@
             return v ? v.toLowerCase().split(' ') : false;
         }
 
-
         function unique(a) {
             return a.filter(function (item, i, ar) {
                 return ar.indexOf(item) === i;
             });
         }
-
 
         var _fixTableColumns = debounce(function () {
             var $headers = self.getTarget().querySelectorAll('th');
@@ -601,7 +545,6 @@
             }
         }, 500);
 
-
         self.fixTableColumns = function ($table) {
             _fixTableColumns($table);
             if (!initTableColumns) {
@@ -609,7 +552,6 @@
                 initTableColumns = true;
             }
         };
-
 
         self.clearFilterBox = function () {
             ($wrapper || $input).removeAttribute(noMatchAttr);
@@ -621,9 +563,7 @@
             afterFilter && afterFilter.call(self);
         };
 
-
         function handleFocus(force) {
-
             if (useDomFilter || (!force && $input.getAttribute(initAttr))) {
                 return false;
             }
@@ -643,9 +583,7 @@
             $input.setAttribute(initAttr, '1');
         }
 
-
         self.visitFirstLink = debounce(function (e, forceNewTab) {
-
             var $firstItem = self.getFirstVisibleItem(),
                 $link;
 
@@ -681,7 +619,6 @@
             }
         }, inputDelay);
 
-
         function handleKeydown(e) {
             e = e || window.event;
 
@@ -699,21 +636,18 @@
                     }
                 }
             }
-
             if (e.keyCode === 13) {
                 onEnter && onEnter.call(self, e);
             }
         }
 
-
         function handleInput() {
-
-            var v = $input.value.toLowerCase().trim();
+            var v = $input.value.toLowerCase().trim(),
+                visibleCount;
 
             if (beforeFilter && beforeFilter.call(self) === false) return;
 
             ($wrapper || $input).setAttribute(hasFilterAttr, (v ? '1' : '0'));
-
 
             // do the filter
             var terms = getTerms(v),
@@ -725,17 +659,17 @@
 
             } else {
 
-                hideSelector = self.getHideSelector(terms);
+                hideSelector = self.getHiddenSelector();
                 setStyles(hideSelector + '{display:none}');
 
-                $visibleItems = self.getVisibleItems(v);
+                visibleCount = self.countVisible();
 
-                ($wrapper || $input).setAttribute(noMatchAttr, (!$visibleItems.length ? '1' : '0'));
+                ($wrapper || $input).setAttribute(noMatchAttr, (visibleCount ? '0' : '1'));
 
-                if (hl) {
+                if (visibleCount && hl) {
+                    $visibleItems = self.getVisibleItems(v);
                     setTimeout(function () {
                         for (var i = 0; i < $visibleItems.length; i++) {
-
                             hl && dehighlight($visibleItems[i]);
 
                             for (var j = 0; j < terms.length; j++) {
@@ -753,40 +687,38 @@
             document.dispatchEvent(new CustomEvent('filterboxsearch', {detail: self}));
         }
 
-
-        self.getHideSelector = function (terms, invert) {
-
-            terms = terms || $input.value;
-
-            var selector = [];
+        self.getHiddenSelector = function () {
+            var selector = [],
+                terms = getTerms($input.value);
 
             for (var j = 0; j < terms.length; j++) {
-
-                var itemsPart = '[' + filterAttr + '*="' + terms[j] + '"]';
-
-                if (!invert) {
-                    itemsPart = ':not(' + itemsPart + ')';
-                }
-
-                selector.push(target + ' ' + items + itemsPart);
+                selector.push(target + ' ' + items + ':not([' + filterAttr + '*="' + terms[j] + '"])');
             }
 
             return selector.join(',');
         };
 
+        self.getVisibleSelector = function () {
+            var selector = '',
+                terms = getTerms($input.value);
+
+            for (var j = 0; j < terms.length; j++) {
+                selector += '[' + filterAttr + '*="' + terms[j] + '"]';
+            }
+
+            return target + ' ' + items + selector;
+        };
 
         self.count = function (v) {
-
             var terms = getTerms(v),
                 selector;
 
-            if (!v || !terms) return self.getTotal();
+            if (!v || !terms) return self.countTotal();
 
-            selector = self.getHideSelector(terms);
+            selector = self.getHiddenSelector();
 
-            return self.getTotal() - document.querySelectorAll(selector).length;
+            return self.countTotal() - document.querySelectorAll(selector).length;
         };
-
 
         self.getFirstVisibleItem = function () {
             var $items = getItems();
@@ -798,11 +730,11 @@
             }
         };
 
-
         self.getVisibleItems = function (v) {
-            return v ? document.querySelectorAll(self.getHideSelector(getTerms(v), true)) : getItems();
-        };
+            if (!v) return getItems();
 
+            return document.querySelectorAll(self.getVisibleSelector());
+        };
 
         /**
          * Get textContent of one or more elements (recursive)
@@ -811,7 +743,6 @@
          * @return string
          */
         function getContent($el) {
-
             var content = '';
 
             if ($el) {
@@ -835,7 +766,6 @@
             str = str.toString().trim().replace(/(\r\n|\n|\r)/g, "");
             return str;
         }
-
 
         self.restoreFilter = function () {
             if (!window.localStorage) {
