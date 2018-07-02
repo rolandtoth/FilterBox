@@ -34,7 +34,7 @@ var myFilterBox = addFilterBox({
                 position: 'append'
             },
             text: function () {
-                return '<strong>' + this.getVisible() + '</strong>/' + this.getTotal();
+                return '<strong>' + this.countVisible() + '</strong>/' + this.countTotal();
             }
         },
         noresults: {
@@ -47,7 +47,7 @@ var myFilterBox = addFilterBox({
                 class: 'no-results'
             },
             text: function () {
-                return !this.getVisible() ? 'No matching country or capital for "' + this.getFilter() + '".' : '';
+                return !this.countVisible() ? 'No matching country or capital for "' + this.getFilter() + '".' : '';
             }
         }
     },
