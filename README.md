@@ -129,7 +129,7 @@ var myFilterBox = addFilterBox({
                 position: 'append'
             },
             text: function () {
-                return '<strong>' + this.getVisible() + '</strong>/' + this.getTotal();
+                return '<strong>' + this.countVisible() + '</strong>/' + this.countTotal();
             }
         },
         noresults: {
@@ -139,7 +139,7 @@ var myFilterBox = addFilterBox({
                 position: 'after'
             },
             text: function () {
-                return !this.getVisible() ? 'Sorry, no matching item for "' + this.getFilter() + '".' : '';
+                return !this.countVisible() ? 'Sorry, no matching item for "' + this.getFilter() + '".' : '';
             }
         }
     },
@@ -203,7 +203,7 @@ Their names are irrelevant, eg. "counter" in `counter: {...}` is only used to ma
 
 The `text` property need to be a function and return a value.
 
-Here you can use FilterBox methods to get data from the  FilterBox instance, eg. `this.getVisible()` will return the number of actual visible items, that is, the number of found results. See the "Methods" section below.
+Here you can use FilterBox methods to get data from the  FilterBox instance, eg. `this.countVisible()` will return the number of actual visible items, that is, the number of found results. See the "Methods" section below.
 
 You can set as many displays as you need.
 
@@ -241,6 +241,7 @@ Increase this value if experiencing slow filtering, eg. on heavier DOM target.
 ### suffix
 
 Here you can set a suffix that will be appended to varius data-attributes FilterBox uses to avoid collision with other existing attributes.
+
 ### target
 
 Here you can define where to search. 
@@ -288,7 +289,7 @@ You can also use these methods after initializing a FilterBox instance, eg.:
 
 ```javascript
 var myFilterBox = addFilterBox({...})
-console.log(myFilterBox.getTotal());
+console.log(myFilterBox.countTotal());
 ```
 
 Tip: you can get the FilterBox instance through the main input's `getFilterBox()` method, eg. if you would like to use in third party libraries:
@@ -307,11 +308,11 @@ The purpose is to fix column widths so on filtering their widths will not change
 
 Once added, the widths will be recalculated on each window resize event, and removed only when destroying the FilterBox instance.
 
-### getVisible()
+### countVisible()
 
 Returns the number of currently unfiltered (visible) items.
 
-### getTotal()
+### countTotal()
 
 Returns the total number of items.
 
@@ -319,7 +320,7 @@ Returns the total number of items.
 
 Returns the main input's value.
 
-### getHidden()
+### countHidden()
 
 Returns the number of hidden items.
 
