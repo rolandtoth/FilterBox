@@ -1,5 +1,5 @@
 /**
- * FilterBox v0.3.8
+ * FilterBox v0.3.9
  */
 (function (window, document) {
     'use strict';
@@ -156,7 +156,6 @@
 
             if (hl) dehighlight();
 
-
             for (var i = 0; i < $items.length; i++) {
                 if (!useDomFilter) $items[i].removeAttribute(filterAttr);
                 $items[i].removeAttribute(zebraAttr);
@@ -230,7 +229,7 @@
         };
 
         self.countVisible = function () {
-            return self.countTotal() - self.countHidden();
+            return self.count(self.getFilter());
         };
 
         self.enableHighlight = function (bool) {
@@ -671,14 +670,15 @@
 
         function handleInput() {
             var v = $input.value.toLowerCase().trim(),
-                visibleCount,
+                count,
                 isInvert = false;
 
-            if(v === '!') return false;
+            if (v === '!') return false;
 
             // invert results if "!" is used as first or last character
             if (v && v.length > 1 && (v.indexOf('!') === 0 || v.indexOf('!') === v.length - 1)) {
                 v = v.indexOf('!') === 0 ? v.substring(1) : v.substring(0, v.length - 1);
+                v = v.trim();
                 dehighlight();
                 isInvert = true;
             }
@@ -694,6 +694,7 @@
                 $visibleItems;
 
             if (!terms) {
+
                 self.clearFilterBox();
 
             } else {
@@ -702,12 +703,14 @@
 
                 setStyles(hideSelector + '{display:none}');
 
-                visibleCount = self.countVisible();
+                // need to get non-visible items too, parent may be hidden
+                count = self.count(v);
 
-                ($wrapper || $input).setAttribute(noMatchAttr, (visibleCount ? '0' : '1'));
+                ($wrapper || $input).setAttribute(noMatchAttr, (count ? '0' : '1'));
 
-                if (!isInvert && visibleCount && hl) {
+                if (!isInvert && count && hl) {
                     $visibleItems = self.getVisibleItems(v);
+
                     setTimeout(function () {
                         for (var i = 0; i < $visibleItems.length; i++) {
                             hl && dehighlight($visibleItems[i]);
@@ -750,14 +753,21 @@
         };
 
         self.count = function (v) {
-            var terms = getTerms(v),
-                selector;
+            var terms, selector, isInvert = false;
+
+            if (v && v.length > 1 && (v.indexOf('!') === 0 || v.indexOf('!') === v.length - 1)) {
+                v = v.indexOf('!') === 0 ? v.substring(1) : v.substring(0, v.length - 1);
+                v = v.trim();
+                isInvert = true;
+            }
+
+            terms = getTerms(v);
 
             if (!v || !terms) return self.countTotal();
 
-            selector = self.getHiddenSelector();
+            selector = isInvert ? self.getHiddenSelector(v) : self.getVisibleSelector(v);
 
-            return self.countTotal() - document.querySelectorAll(selector).length;
+            return document.querySelectorAll(selector).length;
         };
 
         self.getFirstVisibleItem = function () {
@@ -788,7 +798,7 @@
 
                 if (selector.indexOf('[') === -1) {
                     value = $item.getAttribute(selector);
-                    extraData.push(value.trim());
+                    if (value) extraData.push(value.trim());
 
                 } else {
                     var $extraFilterItems = $item.querySelectorAll(selector),
