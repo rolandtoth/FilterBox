@@ -1,5 +1,5 @@
 /**
- * FilterBox v0.3.7
+ * FilterBox v0.3.8
  */
 (function (window, document) {
     'use strict';
@@ -44,7 +44,7 @@
     };
 
     function FilterBox(o) {
-        
+
         if (!o.target || !o.target.selector || !o.target.items || !document.querySelector(o.target.selector + ' ' + o.target.items)) {
             throw new Error('FilterBox: no items to filter');
         }
@@ -83,8 +83,10 @@
             hideAttr = 'data-hide' + suffix,
             initAttr = 'data-init' + suffix,
             hasFilterAttr = 'data-has-filter' + suffix,
+            invertAttr = 'data-invert-filter' + suffix,
             noMatchAttr = 'data-no-match' + suffix,
             filterAttr = o.filterAttr || 'data-filter' + suffix,
+            extraFilterAttrs = o.extraFilterAttrs || false,
             styleId = 'filterbox-css' + suffix,
             useDomFilter = o.useDomFilter || false,
             beforeFilter = setCb('beforeFilter'),
@@ -216,7 +218,7 @@
             return el.offsetParent === null;
         }
 
-        self.getHidden = function () {
+        self.countHidden = function () {
             var hidden = 0,
                 $allItem = getItems();
 
@@ -228,7 +230,7 @@
         };
 
         self.countVisible = function () {
-            return self.countTotal() - self.getHidden();
+            return self.countTotal() - self.countHidden();
         };
 
         self.enableHighlight = function (bool) {
@@ -265,6 +267,25 @@
 
             return self;
         };
+
+        function getSubStr(str, delim1, delim2, keepDelim) {
+            var a = str.indexOf(delim1),
+                out;
+
+            if (a === -1) return '';
+
+            var b = str.indexOf(delim2);
+
+            if (b === -1) return '';
+
+            if (keepDelim) {
+                out = str.substr(a, b - a + 1);
+            } else {
+                out = str.substr(a + 1, b - a - 1);
+            }
+
+            return out;
+        }
 
         function createNode(child) {
             var node = document.createElement(hlTag);
@@ -564,19 +585,26 @@
         };
 
         function handleFocus(force) {
-            if (useDomFilter || (!force && $input.getAttribute(initAttr))) {
-                return false;
-            }
+
+            if (useDomFilter) return false;
+            if (!force || $input.getAttribute(initAttr)) return false;
 
             var $items = getItems();
 
             for (var i = 0; i < $items.length; i++) {
-                var $item = $items[i],
-                    data = getContent($item.querySelectorAll(dataSources.join(',')));
+
+                var $item = $items[i], data, currentValue;
+
+                data = getTextualContent($item.querySelectorAll(dataSources.join(',')));
+                data += getExtraFilterAttrsContent($item, extraFilterAttrs);
 
                 if (data) {
                     data = unique(data.split(' ')); // remove duplicates
-                    $item.setAttribute(filterAttr, data.join(' ').trim());
+
+                    // set or append attribute value
+                    currentValue = $item.getAttribute(filterAttr);
+                    data = (currentValue + ' ' + data.join(' ')).replace('  ', ' ').trim();
+                    $item.setAttribute(filterAttr, data);
                 }
             }
 
@@ -643,11 +671,22 @@
 
         function handleInput() {
             var v = $input.value.toLowerCase().trim(),
-                visibleCount;
+                visibleCount,
+                isInvert = false;
+
+            if(v === '!') return false;
+
+            // invert results if "!" is used as first or last character
+            if (v && v.length > 1 && (v.indexOf('!') === 0 || v.indexOf('!') === v.length - 1)) {
+                v = v.indexOf('!') === 0 ? v.substring(1) : v.substring(0, v.length - 1);
+                dehighlight();
+                isInvert = true;
+            }
 
             if (beforeFilter && beforeFilter.call(self) === false) return;
 
             ($wrapper || $input).setAttribute(hasFilterAttr, (v ? '1' : '0'));
+            ($wrapper || $input).setAttribute(invertAttr, (isInvert ? '1' : '0'));
 
             // do the filter
             var terms = getTerms(v),
@@ -659,14 +698,15 @@
 
             } else {
 
-                hideSelector = self.getHiddenSelector();
+                hideSelector = isInvert ? self.getVisibleSelector(v) : self.getHiddenSelector(v);
+
                 setStyles(hideSelector + '{display:none}');
 
                 visibleCount = self.countVisible();
 
                 ($wrapper || $input).setAttribute(noMatchAttr, (visibleCount ? '0' : '1'));
 
-                if (visibleCount && hl) {
+                if (!isInvert && visibleCount && hl) {
                     $visibleItems = self.getVisibleItems(v);
                     setTimeout(function () {
                         for (var i = 0; i < $visibleItems.length; i++) {
@@ -687,9 +727,9 @@
             document.dispatchEvent(new CustomEvent('filterboxsearch', {detail: self}));
         }
 
-        self.getHiddenSelector = function () {
+        self.getHiddenSelector = function (v) {
             var selector = [],
-                terms = getTerms($input.value);
+                terms = getTerms(v ? v : $input.value);
 
             for (var j = 0; j < terms.length; j++) {
                 selector.push(target + ' ' + items + ':not([' + filterAttr + '*="' + terms[j] + '"])');
@@ -698,9 +738,9 @@
             return selector.join(',');
         };
 
-        self.getVisibleSelector = function () {
+        self.getVisibleSelector = function (v) {
             var selector = '',
-                terms = getTerms($input.value);
+                terms = getTerms(v ? v : $input.value);
 
             for (var j = 0; j < terms.length; j++) {
                 selector += '[' + filterAttr + '*="' + terms[j] + '"]';
@@ -736,19 +776,49 @@
             return document.querySelectorAll(self.getVisibleSelector());
         };
 
+        function getExtraFilterAttrsContent($item, extraFilterAttrs) {
+            // todo: process dataSources
+
+            var extraData = [];
+
+            for (var k = 0; k < extraFilterAttrs.length; k++) {
+
+                var selector = extraFilterAttrs[k],
+                    value;
+
+                if (selector.indexOf('[') === -1) {
+                    value = $item.getAttribute(selector);
+                    extraData.push(value.trim());
+
+                } else {
+                    var $extraFilterItems = $item.querySelectorAll(selector),
+                        attr = getSubStr(selector, '[', ']');
+
+                    if ($extraFilterItems.length) {
+                        for (var j = 0; j < $extraFilterItems.length; j++) {
+                            value = $extraFilterItems[j].getAttribute(attr);
+                            if (value) extraData.push(value.trim());
+                        }
+                    }
+                }
+            }
+
+            return extraData ? extraData.join(' ') : '';
+        }
+
         /**
          * Get textContent of one or more elements (recursive)
          *
          * @param $el
          * @return string
          */
-        function getContent($el) {
+        function getTextualContent($el) {
             var content = '';
 
             if ($el) {
                 if ($el.length) {
                     for (var i = 0; i < $el.length; i++) {
-                        content += getContent($el[i]);
+                        content += getTextualContent($el[i]);
                     }
                 } else if ($el.textContent) {
                     content = $el.textContent.replace(/<[^>]*>/g, '');
