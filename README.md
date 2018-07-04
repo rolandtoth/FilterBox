@@ -450,6 +450,10 @@ Can be used eg. to add a red background color or outline.
 
 If the filter mode is invert, the input (or the wrapper, if available) will get a `data-invert-filter` attribute with value "1".
 
+### data-init
+
+After initializing the input (or the wrapper, if available) will get `data-invert-filter="1"`. 
+
 
 ## Invert filter (invert search)
 
