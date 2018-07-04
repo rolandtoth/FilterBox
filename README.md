@@ -17,6 +17,7 @@ FilterBox is a pure JavaScript utility to filter (search) DOM nodes.
 - callbacks and public methods
 - force zebra stripe background
 - lazy init (only on first input focus)
+- invert filtering (with "!" character)
 - no dependencies
 
 
@@ -423,6 +424,17 @@ Can be used eg. to highlight the main input to indicate that filtering is active
 If there's no match the input (or the wrapper, if available) will get a `data-no-match` attribute with value "1".
 
 Can be used eg. to add a red background color or outline.
+
+### data-invert-filter
+
+If the filter mode is invert, the input (or the wrapper, if available) will get a `data-invert-filter` attribute with value "1".
+
+
+## Invert filter (invert search)
+
+If the search term starts or ends with an exclamation mark ("!") character then invert filtering will be performed. This means that if you type `spaghetti!` to the input, the result set will contain items NOT having `spaghetti` in them.
+
+With invert filtering you can easily see items not matching the current search term.
 
 
 ## Contributing
