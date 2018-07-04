@@ -243,6 +243,8 @@ Increase this value if experiencing slow filtering, eg. on heavier DOM target.
 
 An array of data attributes (or selectors with data-attributes) whose values you would like to add to the filter keywords.
 
+This way you can add additional keywords to match items, even they don't appear in the HTML.
+
 For example, if your target items are table rows, then:
 
 ```javascript
@@ -255,6 +257,8 @@ extraFilterAttrs: [
 
 - attribute name only: get value from the item itself (on `tr` elements in this example)
 - selector with attribute: values will be gathered from the items's descendants (on `td` elements that has `data-email` attributes here)
+
+Note that when an extra filter attribute is matched, highlighting may not available as there's no visible HTML element to use.
 
 ### suffix
 
