@@ -1,5 +1,5 @@
 /**
- * FilterBox v0.4.0
+ * FilterBox v0.4.2
  */
 (function (window, document) {
     'use strict';
@@ -78,7 +78,7 @@
             $displays = [],
             suffix = o.suffix ? o.suffix : '',
             zebra = o.zebra || false,
-            lazy = o.lazy === false,
+            lazy = o.lazy !== false,
             zebraAttr = 'data-odd' + suffix,
             hideAttr = 'data-hide' + suffix,
             initAttr = 'data-init' + suffix,
@@ -106,7 +106,8 @@
             hiddenStyle = '[' + hideAttr + '="1"]' + '{display:none}',
             init = false,
             initTableColumns = false,
-            observer;
+            observer,
+            SEPARATOR = o.SEPARATOR || '|';
 
         function getItems() {
             return $target.querySelectorAll(items);
@@ -120,8 +121,8 @@
         self.hash = 'fbx' + hashCode(target + items + self.countTotal() + suffix);
 
         self.update = function () {
-            handleFocus(true);
-            updateDisplays();
+            handleFocus(null, true);
+            self.updateDisplays();
             self.setZebra();
         };
 
@@ -200,7 +201,7 @@
                         $input.removeAttribute(key);
                     }
                     if ($input.id === self.hash) $input.removeAttribute('id');
-                    $input.removeAttribute(initAttr);
+                    ($wrapper || $input).removeAttribute(initAttr);
                 }
             }
             $input.value = '';
@@ -251,7 +252,7 @@
 
         self.filter = function (v) {
             $input.value = v;
-            handleFocus();
+            handleFocus(null, false);
             handleInput();
             return self;
         };
@@ -407,6 +408,7 @@
         }
 
         function addMarkup() {
+
             if (input && document.querySelector(input)) {
                 $input = document.querySelector(input);
             } else {
@@ -511,7 +513,7 @@
                             self.updateDisplays();
                             self.setZebra();
                         } else if (t === 'characterData') {
-                            handleFocus(true);
+                            handleFocus(null);
                             hl && highlight(self.getFilter(), $target, dataSources.join(','));
                             self.setZebra();
                             self.updateDisplays();
@@ -542,13 +544,29 @@
             return self.getHiddenSelector() === '';
         };
 
+        self.getFilterTokens = function(str) {
+            var i, aStr = str.match(/\w[a-zA-Z\u00C0-\u017F]+|"[^"]+"/g);
+
+            if (!aStr) return [str];
+
+            i = aStr.length;
+
+            while (i--) {
+                aStr[i] = aStr[i].replace(/"/g, "");
+            }
+
+            return aStr;
+        };
+
         function getTerms(v) {
             if (!v) return false;
 
-            v = v.replace(/['"]+/g, '');
-            if (v) v = v.trim().replace(/ +/g, ' ');  // remove double spaces
+            // v = v.replace(/['"]+/g, '');
+            if (v) v = replaceAll(v, SEPARATOR + SEPARATOR, SEPARATOR);  // remove double separators
 
-            return v ? v.toLowerCase().split(' ') : false;
+            if (!v) return false;
+
+            return self.getFilterTokens(v.toLowerCase());
         }
 
         function unique(a) {
@@ -583,10 +601,15 @@
             afterFilter && afterFilter.call(self);
         };
 
-        function handleFocus(force) {
+        function handleFocus(e, force) {
 
             if (useDomFilter) return false;
-            if (!force || $input.getAttribute(initAttr)) return false;
+
+            if (force === undefined) {
+                if (($wrapper || $input).hasAttribute(initAttr)) {
+                    return false;
+                }
+            }
 
             var $items = getItems();
 
@@ -598,16 +621,16 @@
                 data += getExtraFilterAttrsContent($item, extraFilterAttrs);
 
                 if (data) {
-                    data = unique(data.split(' ')); // remove duplicates
+                    data = unique(data.split(SEPARATOR)); // remove duplicates
 
                     // set or append attribute value
                     currentValue = $item.getAttribute(filterAttr);
-                    data = (currentValue + ' ' + data.join(' ')).replace('  ', ' ').trim();
+                    data = (currentValue + SEPARATOR + data.join(SEPARATOR)).trim();
                     $item.setAttribute(filterAttr, data);
                 }
             }
 
-            $input.setAttribute(initAttr, '1');
+            ($wrapper || $input).setAttribute(initAttr, '1');
         }
 
         self.visitFirstLink = debounce(function (e, forceNewTab) {
@@ -760,6 +783,10 @@
             return v;
         }
 
+        function replaceAll(str, search, replacement) {
+            return str.split(search).join(replacement);
+        }
+
         self.count = function (v) {
             var terms, selector, invert = false;
 
@@ -774,7 +801,12 @@
 
             selector = invert ? self.getHiddenSelector(v) : self.getVisibleSelector(v);
 
-            return document.querySelectorAll(selector).length;
+            try {
+                return document.querySelectorAll(selector).length;
+            }
+            catch (err) {
+                return 0;
+            }
         };
 
         self.getFirstVisibleItem = function () {
@@ -820,7 +852,7 @@
                 }
             }
 
-            return extraData ? extraData.join(' ') : '';
+            return extraData ? extraData.join(SEPARATOR) : '';
         }
 
         /**
@@ -843,14 +875,14 @@
                 }
             }
 
-            return content + ' ';
+            return content + SEPARATOR;
         }
 
         //remove line breaks from str
         function removeNewLines(str) {
-            str = str.replace(/\s{2,}/g, ' ');
-            str = str.replace(/\t/g, ' ');
-            str = str.toString().trim().replace(/(\r\n|\n|\r)/g, "");
+            str = str.replace(/\s{2,}/g, SEPARATOR);
+            str = str.replace(/\t/g, SEPARATOR);
+            str = str.toString().trim().replace(/(\r\n|\n|\r)/g, '');
             return str;
         }
 
@@ -869,8 +901,8 @@
         addDisplays();
         addEvents();
 
-        if (lazy) {
-            handleFocus();
+        if (!lazy) {
+            handleFocus(null, false);
         }
 
         init = true;
