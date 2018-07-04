@@ -1,5 +1,5 @@
 /**
- * FilterBox v0.3.9
+ * FilterBox v0.4.0
  */
 (function (window, document) {
     'use strict';
@@ -546,7 +546,7 @@
             if (!v) return false;
 
             v = v.replace(/['"]+/g, '');
-            v = v.trim().replace(/ +/g, ' ');  // remove double spaces
+            if (v) v = v.trim().replace(/ +/g, ' ');  // remove double spaces
 
             return v ? v.toLowerCase().split(' ') : false;
         }
@@ -671,22 +671,20 @@
         function handleInput() {
             var v = $input.value.toLowerCase().trim(),
                 count,
-                isInvert = false;
+                invert = false;
 
             if (v === '!') return false;
 
-            // invert results if "!" is used as first or last character
-            if (v && v.length > 1 && (v.indexOf('!') === 0 || v.indexOf('!') === v.length - 1)) {
-                v = v.indexOf('!') === 0 ? v.substring(1) : v.substring(0, v.length - 1);
-                v = v.trim();
+            if (isInvertFilter(v)) {
+                invert = true;
                 dehighlight();
-                isInvert = true;
+                v = getValueWhenInvert(v);
             }
 
             if (beforeFilter && beforeFilter.call(self) === false) return;
 
             ($wrapper || $input).setAttribute(hasFilterAttr, (v ? '1' : '0'));
-            ($wrapper || $input).setAttribute(invertAttr, (isInvert ? '1' : '0'));
+            ($wrapper || $input).setAttribute(invertAttr, (invert ? '1' : '0'));
 
             // do the filter
             var terms = getTerms(v),
@@ -699,16 +697,16 @@
 
             } else {
 
-                hideSelector = isInvert ? self.getVisibleSelector(v) : self.getHiddenSelector(v);
+                hideSelector = invert ? self.getVisibleSelector(v) : self.getHiddenSelector(v);
 
                 setStyles(hideSelector + '{display:none}');
 
                 // need to get non-visible items too, parent may be hidden
-                count = self.count(v);
+                count = self.countVisible();
 
                 ($wrapper || $input).setAttribute(noMatchAttr, (count ? '0' : '1'));
 
-                if (!isInvert && count && hl) {
+                if (!invert && count && hl) {
                     $visibleItems = self.getVisibleItems(v);
 
                     setTimeout(function () {
@@ -752,20 +750,29 @@
             return target + ' ' + items + selector;
         };
 
-        self.count = function (v) {
-            var terms, selector, isInvert = false;
+        function isInvertFilter(v) {
+            return (v && v.length > 1 && (v.indexOf('!') === 0 || v.indexOf('!') === v.length - 1));
+        }
 
-            if (v && v.length > 1 && (v.indexOf('!') === 0 || v.indexOf('!') === v.length - 1)) {
-                v = v.indexOf('!') === 0 ? v.substring(1) : v.substring(0, v.length - 1);
-                v = v.trim();
-                isInvert = true;
+        function getValueWhenInvert(v) {
+            v = v.indexOf('!') === 0 ? v.substring(1) : v.substring(0, v.length - 1);
+            if (v) v = v.trim();
+            return v;
+        }
+
+        self.count = function (v) {
+            var terms, selector, invert = false;
+
+            if (isInvertFilter(v)) {
+                invert = true;
+                v = getValueWhenInvert(v);
             }
 
             terms = getTerms(v);
 
             if (!v || !terms) return self.countTotal();
 
-            selector = isInvert ? self.getHiddenSelector(v) : self.getVisibleSelector(v);
+            selector = invert ? self.getHiddenSelector(v) : self.getVisibleSelector(v);
 
             return document.querySelectorAll(selector).length;
         };
