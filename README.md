@@ -239,6 +239,23 @@ Time in milliseconds to delay triggering filtering (default: 300).
 
 Increase this value if experiencing slow filtering, eg. on heavier DOM target.
 
+### extraFilterAttrs
+
+An array of data attributes (or selectors with data-attributes) whose values you would like to add to the filter keywords.
+
+For example, if your target items are table rows, then:
+
+```javascript
+extraFilterAttrs: [
+  'data-email',
+  'td[data-email]',
+  '[data-email]'
+]
+```
+
+- attribute name only: get value from the item itself (on `tr` elements in this example)
+- selector with attribute: values will be gathered from the items's descendants (on `td` elements that has `data-email` attributes here)
+
 ### suffix
 
 Here you can set a suffix that will be appended to varius data-attributes FilterBox uses to avoid collision with other existing attributes.
