@@ -1,5 +1,5 @@
 /**
- * FilterBox v0.4.2
+ * FilterBox v0.4.3
  */
 (function (window, document) {
     'use strict';
@@ -593,6 +593,7 @@
 
         self.clearFilterBox = function () {
             ($wrapper || $input).removeAttribute(noMatchAttr);
+            ($wrapper || $input).removeAttribute(hasFilterAttr);
             $input.value = '';
             setStyles('');
             hideSelector = '';
@@ -869,9 +870,17 @@
                     for (var i = 0; i < $el.length; i++) {
                         content += getTextualContent($el[i]);
                     }
-                } else if ($el.textContent) {
-                    content = $el.textContent.replace(/<[^>]*>/g, '');
-                    content = removeNewLines(content).toLowerCase();
+                } else {
+
+                    if ($el.value) {
+                        content += SEPARATOR + $el.value.toLowerCase();
+                    }
+
+                    if ($el.textContent) {
+                        content += SEPARATOR + $el.textContent;
+                    }
+
+                    content = removeNewLines(content.replace(/<[^>]*>/g, '')).toLowerCase();
                 }
             }
 
