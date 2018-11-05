@@ -452,7 +452,7 @@ If the filter mode is invert, the input (or the wrapper, if available) will get 
 
 ### data-init
 
-After initializing the input (or the wrapper, if available) will get `data-invert-filter="1"`. 
+After initializing the input (or the wrapper, if available) will get `data-init="1"`. 
 
 
 ## Invert filter (invert search)
