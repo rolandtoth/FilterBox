@@ -17,7 +17,7 @@ FilterBox is a pure JavaScript utility to filter (search) DOM nodes.
 - callbacks and public methods
 - force zebra stripe background
 - lazy init (only on first input focus)
-- invert filtering (with "!" character)
+- invert mode with "!" character
 - no dependencies
 
 
