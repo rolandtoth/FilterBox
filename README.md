@@ -319,40 +319,25 @@ Tip: you can get the FilterBox instance through the main input's `getFilterBox()
 ```javascript
 document.querySelector('input.myfilterbox').getFilterBox().filter('hello');
 ```
+### clear()
 
-### fixTableColumns(table)
-
-*Parameters: table (DOM element, required)*
-
-If the main target is a table, this helper function will set the widths of `th` nodes using inline style.
-
-The purpose is to fix column widths so on filtering their widths will not change (that is, there will be no "jumps"). Recommended to add it in the `onReady` callback.
-
-Once added, the widths will be recalculated on each window resize event, and removed only when destroying the FilterBox instance.
-
-### countVisible()
-
-Returns the number of currently unfiltered (visible) items.
-
-### countTotal()
-
-Returns the total number of items.
-
-### getFilter()
-
-Returns the main input's value.
+Sets the main input empty and shows all items of the main target.
 
 ### countHidden()
 
 Returns the number of hidden items.
 
-### getTarget()
+### countTotal()
 
-Returns the main target DOM element.
+Returns the total number of items.
 
-### getInput()
+### countVisible()
 
-Returns the main input DOM element.
+Returns the number of currently unfiltered (visible) items.
+
+### destroy()
+
+Removes the FilterBox instance in question and its event listeners.
 
 ### enableHighlight()
 
@@ -364,27 +349,41 @@ Enables or disables the highlight feature. Accepts `true` or `false`.
 
 Filters the main target, just like if you typed something into the main input.
 
+### fixTableColumns(table)
+
+*Parameters: table (DOM element, required)*
+
+If the main target is a table, this helper function will set the widths of `th` nodes using inline style.
+
+The purpose is to fix column widths so on filtering their widths will not change (that is, there will be no "jumps"). Recommended to add it in the `onReady` callback.
+
+Once added, the widths will be recalculated on each window resize event, and removed only when destroying the FilterBox instance.
+
 ### focus()
 
 Moves focus to the main input, which triggers the focus event. 
 
 FilterBox adds `data-filter` attributes to the DOM only when the main input is first focused, so this method can be used to force a full init.
 
-### update()
+### getFilter()
 
-Updates the main target and also the attached displays.
+Returns the main input's value.
 
-### clear()
+### getInput()
 
-Sets the main input empty and shows all items of the main target.
+Returns the main input DOM element.
 
-### destroy()
+### getInvertFilter()
 
-Removes the FilterBox instance in question and its event listeners.
+Returns the main input's value when in invert mode (strips "!" character).
 
-### updateDisplays()
+### getTarget()
 
-Updates attached displays' texts, if there's any. FilterBox does this automatically but sometimes you may need to use it.
+Returns the main target DOM element.
+
+### isInvertFilter()
+
+Returns true when FilterBox is in invert mode.
 
 ### setZebra()
 
@@ -400,6 +399,13 @@ A helper method to hide or show DOM elements, eg. for hiding a no-result display
 
 First parameter is the DOM element for which you would like to toggle visibility and the second is a boolean (`true` hides the element).
 
+### update()
+
+Updates the main target and also the attached displays.
+
+### updateDisplays()
+
+Updates attached displays' texts, if there's any. FilterBox does this automatically but sometimes you may need to use it.
 
 ## Callbacks
 
