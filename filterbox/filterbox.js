@@ -1,5 +1,6 @@
 /**
- * FilterBox v0.4.4
+ * FilterBox v0.4.5
+ * 2019/07/04
  */
 (function (window, document) {
     'use strict';
@@ -9,7 +10,11 @@
         if (typeof window.CustomEvent === "function") return false;
 
         function CustomEvent(event, params) {
-            params = params || {bubbles: false, cancelable: false, detail: undefined};
+            params = params || {
+                bubbles: false,
+                cancelable: false,
+                detail: undefined
+            };
             var evt = document.createEvent('CustomEvent');
             evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
             return evt;
@@ -20,13 +25,15 @@
     })();
 
     function hashCode(str) {
-        var hash = 0, i = 0, len = str.length;
+        var hash = 0,
+            i = 0,
+            len = str.length;
         while (i < len) hash = ((hash << 5) - hash + str.charCodeAt(i++)) << 0;
         return hash;
     }
 
     /**
-     * Wrapper to allow return false if the filterbox couldn't be created.
+     * Wrapper allowing return false if instance couldn't be created.
      *
      * @param o
      * @returns {FilterBox || boolean}
@@ -34,8 +41,7 @@
     window.addFilterBox = function (o) {
         try {
             return new FilterBox(o);
-        }
-        catch (err) {
+        } catch (err) {
             if (o && o.debuglevel) {
                 console.log(o.debuglevel === 2 ? err : err.message);
             }
@@ -44,7 +50,6 @@
     };
 
     function FilterBox(o) {
-
         if (!o.target || !o.target.selector || !o.target.items || !document.querySelector(o.target.selector + ' ' + o.target.items)) {
             throw new Error('FilterBox: no items to filter');
         }
@@ -94,6 +99,10 @@
             onEnter = setCb('onEnter'),
             onEscape = setCb('onEscape'),
             onReady = setCb('onReady'),
+            onFocus = setCb('onFocus'),
+            onBlur = setCb('onBlur'),
+            beforeUpdate = setCb('beforeUpdate'),
+            afterUpdate = setCb('afterUpdate'),
             beforeDestroy = setCb('beforeDestroy'),
             afterDestroy = setCb('afterDestroy'),
             enableObserver = o.enableObserver === true,
@@ -120,10 +129,16 @@
         $items = getItems();
         self.hash = 'fbx' + hashCode(target + items + self.countTotal() + suffix);
 
+        function callCb(cb, e) {
+            if (cb && cb.call(self, e) === false) return false;
+        }
+
         self.update = function () {
+            if (callCb(beforeUpdate) === false) return;
             handleFocus(null, true);
             self.updateDisplays();
             self.setZebra();
+            callCb(afterUpdate);
         };
 
         self.getTarget = function () {
@@ -153,7 +168,7 @@
 
         self.destroy = function () {
             if (!init) return;
-            if (beforeDestroy && beforeDestroy.call(self) === false) return;
+            if (callCb(beforeDestroy) === false) return;
 
             if (hl) dehighlight();
 
@@ -169,6 +184,7 @@
 
             $input.removeEventListener('input', addHandleInput);
             $input.removeEventListener('focus', handleFocus);
+            $input.removeEventListener('blur', handleBlur);
             $input.removeEventListener('keydown', handleKeydown);
 
             document.removeEventListener('filterboxsearch', addFilterBoxSearch);
@@ -408,7 +424,6 @@
         }
 
         function addMarkup() {
-
             if (input && document.querySelector(input)) {
                 $input = document.querySelector(input);
             } else {
@@ -446,6 +461,7 @@
 
         function insertDom($el, $to, where) {
             if (!$el || !$to) return false;
+
             switch (where) {
                 case 'append':
                     $to.appendChild($el);
@@ -464,7 +480,7 @@
         function addDisplays() {
             if (!displays) return false;
 
-            if(typeof displays === 'function') {
+            if (typeof displays === 'function') {
                 displays = displays(self);
             }
 
@@ -502,6 +518,7 @@
 
         function addEvents() {
             $input.addEventListener('focus', handleFocus);
+            $input.addEventListener('blur', handleBlur);
             $input.addEventListener('keydown', handleKeydown);
             $input.addEventListener('input', addHandleInput);
 
@@ -524,7 +541,11 @@
                         }
                     }
                 });
-                observer.observe($target, {childList: true, subtree: true, characterData: true});
+                observer.observe($target, {
+                    childList: true,
+                    subtree: true,
+                    characterData: true
+                });
             }
         }
 
@@ -548,7 +569,7 @@
             return self.getHiddenSelector() === '';
         };
 
-        self.getFilterTokens = function(str) {
+        self.getFilterTokens = function (str) {
             var i, aStr = str.match(/[^\s]+|"[^"]+"/g);
 
             if (!aStr) return [str];
@@ -564,7 +585,7 @@
 
         function getTerms(v) {
             if (!v) return false;
-            if (v) v = replaceAll(v, SEPARATOR + SEPARATOR, SEPARATOR);  // remove double separators
+            if (v) v = replaceAll(v, SEPARATOR + SEPARATOR, SEPARATOR); // remove double separators
             if (!v) return false;
 
             return self.getFilterTokens(v.toLowerCase());
@@ -600,10 +621,15 @@
             hideSelector = '';
             hl && dehighlight($target);
             self.updateDisplays();
-            afterFilter && afterFilter.call(self);
+            callCb(afterFilter);
         };
 
+        function handleBlur() {
+            callCb(onBlur);
+        }
+
         function handleFocus(e, force) {
+            if (callCb(onFocus) === false) return;
             if (useDomFilter) return false;
 
             if (force === undefined) {
@@ -627,10 +653,10 @@
 
                     // set or append attribute value
                     currentValue = $item.getAttribute(filterAttr);
-                    if(currentValue) data.push(currentValue);
+                    if (currentValue) data.push(currentValue);
 
                     // also push item value if any (input, option, etc)
-                    if($item.value) data.push($item.value);
+                    if ($item.value) data.push($item.value);
 
                     data = unique(data); // remove duplicates
 
@@ -657,8 +683,7 @@
 
             if ($firstItem.tagName === 'A') {
                 $link = $firstItem;
-            }
-            else if ($firstItem.querySelector('a')) {
+            } else if ($firstItem.querySelector('a')) {
                 $link = $firstItem.querySelector('a');
             }
 
@@ -688,7 +713,7 @@
 
             if (e.keyCode === 27) {
                 if (onEscape) {
-                    onEscape.call(self, e);
+                    callCb(onEscape, e);
                 } else {
                     e.preventDefault();
                     if (self.getFilter() !== '') {
@@ -699,7 +724,7 @@
                 }
             }
             if (e.keyCode === 13) {
-                onEnter && onEnter.call(self, e);
+                callCb(onEnter, e);
             }
         }
 
@@ -720,7 +745,7 @@
                 v = self.getInvertFilter();
             }
 
-            if (beforeFilter && beforeFilter.call(self) === false) return;
+            if (callCb(beforeFilter) === false) return;
 
             ($wrapper || $input).setAttribute(hasFilterAttr, (v ? '1' : '0'));
             ($wrapper || $input).setAttribute(invertAttr, (invert ? '1' : '0'));
@@ -760,9 +785,11 @@
 
             self.updateDisplays();
             self.setZebra();
-            afterFilter && afterFilter.call(self);
+            callCb(afterFilter)
 
-            document.dispatchEvent(new CustomEvent('filterboxsearch', {detail: self}));
+            document.dispatchEvent(new CustomEvent('filterboxsearch', {
+                detail: self
+            }));
         }
 
         self.getHiddenSelector = function (v) {
@@ -787,13 +814,13 @@
             return target + ' ' + items + selector;
         };
 
-        self.isInvertFilter = function() {
+        self.isInvertFilter = function () {
             var v = this.getFilter();
 
             return (v && v.length > 1 && (v.indexOf('!') === 0 || v.indexOf('!') === v.length - 1));
         };
 
-        self.getInvertFilter = function() {
+        self.getInvertFilter = function () {
             var v = self.getFilter();
 
             v = v.indexOf('!') === 0 ? v.substring(1) : v.substring(0, v.length - 1);
@@ -821,8 +848,7 @@
 
             try {
                 return document.querySelectorAll(selector).length;
-            }
-            catch (err) {
+            } catch (err) {
                 return 0;
             }
         };
@@ -928,7 +954,7 @@
 
         init = true;
 
-        onReady && onReady.call(self);
+        callCb(onReady);
 
         return self;
     }
