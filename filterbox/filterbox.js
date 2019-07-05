@@ -1,9 +1,9 @@
 /**
- * FilterBox v0.4.5
- * 2019/07/04
+ * FilterBox v0.4.6
+ * 2019/07/05
  */
 (function (window, document) {
-    'use strict';
+    "use strict";
 
     // CustomEvent polyfill
     (function () {
@@ -15,7 +15,7 @@
                 cancelable: false,
                 detail: undefined
             };
-            var evt = document.createEvent('CustomEvent');
+            var evt = document.createEvent("CustomEvent");
             evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
             return evt;
         }
@@ -28,15 +28,17 @@
         var hash = 0,
             i = 0,
             len = str.length;
-        while (i < len) hash = ((hash << 5) - hash + str.charCodeAt(i++)) << 0;
+
+        while (i < len) hash = hash << 5 - hash + str.charCodeAt(i++) << 0;
+
         return hash;
     }
 
     /**
      * Wrapper allowing return false if instance couldn't be created.
      *
-     * @param o
-     * @returns {FilterBox || boolean}
+     * @param {object} o Settings object
+     * @return {FilterBox} Filterbox instance or false
      */
     window.addFilterBox = function (o) {
         try {
@@ -45,21 +47,21 @@
             if (o && o.debuglevel) {
                 console.log(o.debuglevel === 2 ? err : err.message);
             }
-            return false;
         }
+        return false;
     };
 
     function FilterBox(o) {
-        if (!o.target || !o.target.selector || !o.target.items || !document.querySelector(o.target.selector + ' ' + o.target.items)) {
-            throw new Error('FilterBox: no items to filter');
+        if (!o.target || !o.target.selector || !o.target.items || !document.querySelector(o.target.selector + " " + o.target.items)) {
+            throw new Error("FilterBox: no items to filter");
         }
 
-        if (o.callbacks && typeof o.callbacks.onInit === 'function' && o.callbacks.onInit() === false) {
-            throw new Error('FilterBox: onInit callback');
+        if (o.callbacks && typeof o.callbacks.onInit === "function" && o.callbacks.onInit() === false) {
+            throw new Error("FilterBox: onInit callback");
         }
 
         function setCb(n) {
-            return o.callbacks && typeof o.callbacks[n] === 'function' ? o.callbacks[n] : false;
+            return o.callbacks && typeof o.callbacks[n] === "function" ? o.callbacks[n] : false;
         }
 
         var self = this,
@@ -67,9 +69,9 @@
             $target = document.querySelector(target),
             items = o.target.items,
             $items,
-            dataSources = o.target.sources || ['*'],
+            dataSources = o.target.sources || ["*"],
             $addTo = o.addTo && o.addTo.selector && document.querySelector(o.addTo.selector) ? document.querySelector(o.addTo.selector) : $target,
-            position = o.addTo && o.addTo.position ? o.addTo.position : 'before',
+            position = o.addTo && o.addTo.position ? o.addTo.position : "before",
             inputDelay = o.inputDelay >= 0 ? o.inputDelay : 300,
             input = o.input && o.input.selector && document.querySelector(o.input.selector) ? o.input.selector : false,
             inputAttrs = o.input && o.input.attrs ? o.input.attrs : false,
@@ -79,44 +81,44 @@
             $wrapper,
             label = o.input && o.input.label ? o.input.label : false,
             $label,
-            displays = o.displays && (typeof o.displays === 'object' || typeof o.displays === 'function') ? o.displays : false,
+            displays = o.displays && (typeof o.displays === "object" || typeof o.displays === "function") ? o.displays : false,
             $displays = [],
-            suffix = o.suffix ? o.suffix : '',
+            suffix = o.suffix ? o.suffix : "",
             zebra = o.zebra || false,
             lazy = o.lazy !== false,
-            zebraAttr = 'data-odd' + suffix,
-            hideAttr = 'data-hide' + suffix,
-            initAttr = 'data-init' + suffix,
-            hasFilterAttr = 'data-has-filter' + suffix,
-            invertAttr = 'data-invert-filter' + suffix,
-            noMatchAttr = 'data-no-match' + suffix,
-            filterAttr = o.filterAttr || 'data-filter' + suffix,
+            zebraAttr = "data-odd" + suffix,
+            hideAttr = "data-hide" + suffix,
+            initAttr = "data-init" + suffix,
+            hasFilterAttr = "data-has-filter" + suffix,
+            invertAttr = "data-invert-filter" + suffix,
+            noMatchAttr = "data-no-match" + suffix,
+            filterAttr = o.filterAttr || "data-filter" + suffix,
             extraFilterAttrs = o.extraFilterAttrs || false,
-            styleId = 'filterbox-css' + suffix,
+            styleId = "filterbox-css" + suffix,
             useDomFilter = o.useDomFilter || false,
-            beforeFilter = setCb('beforeFilter'),
-            afterFilter = setCb('afterFilter'),
-            onEnter = setCb('onEnter'),
-            onEscape = setCb('onEscape'),
-            onReady = setCb('onReady'),
-            onFocus = setCb('onFocus'),
-            onBlur = setCb('onBlur'),
-            beforeUpdate = setCb('beforeUpdate'),
-            afterUpdate = setCb('afterUpdate'),
-            beforeDestroy = setCb('beforeDestroy'),
-            afterDestroy = setCb('afterDestroy'),
+            beforeFilter = setCb("beforeFilter"),
+            afterFilter = setCb("afterFilter"),
+            onEnter = setCb("onEnter"),
+            onEscape = setCb("onEscape"),
+            onReady = setCb("onReady"),
+            onFocus = setCb("onFocus"),
+            onBlur = setCb("onBlur"),
+            beforeUpdate = setCb("beforeUpdate"),
+            afterUpdate = setCb("afterUpdate"),
+            beforeDestroy = setCb("beforeDestroy"),
+            afterDestroy = setCb("afterDestroy"),
             enableObserver = o.enableObserver === true,
-            hideSelector = '',
+            hideSelector,
             hl = o.highlight || false,
-            hlTag = hl && hl.tag ? hl.tag : 'fbxhl',
-            hlClass = 'on' + suffix,
-            hlStyle = hl && hl.style ? hlTag + '.' + hlClass + '{' + hl.style + '}' : '',
+            hlTag = hl && hl.tag ? hl.tag : "fbxhl",
+            hlClass = "on" + suffix,
+            hlStyle = hl && hl.style ? hlTag + "." + hlClass + "{" + hl.style + "}" : "",
             hlMinChar = hl && hl.minChar ? hl.minChar : 2,
-            hiddenStyle = '[' + hideAttr + '="1"]' + '{display:none}',
+            hiddenStyle = "[" + hideAttr + '="1"]' + "{display:none}",
             init = false,
             initTableColumns = false,
             observer,
-            SEPARATOR = o.SEPARATOR || '|';
+            SEPARATOR = o.SEPARATOR || "|";
 
         function getItems() {
             return $target.querySelectorAll(items);
@@ -127,7 +129,7 @@
         };
 
         $items = getItems();
-        self.hash = 'fbx' + hashCode(target + items + self.countTotal() + suffix);
+        self.hash = "fbx" + hashCode(target + items + self.countTotal() + suffix);
 
         function callCb(cb, e) {
             if (cb && cb.call(self, e) === false) return false;
@@ -162,8 +164,9 @@
             $el && $el.parentNode && $el.parentNode.removeChild($el);
         }
 
-        self.clear = function () {
-            self.filter('');
+        self.clear = function (focus) {
+            self.filter("");
+            focus && self.focus();
         };
 
         self.destroy = function () {
@@ -172,31 +175,31 @@
 
             if (hl) dehighlight();
 
-            for (var i = 0; i < $items.length; i++) {
-                if (!useDomFilter) $items[i].removeAttribute(filterAttr);
-                $items[i].removeAttribute(zebraAttr);
+            for (var j = 0; j < $items.length; j++) {
+                if (!useDomFilter) $items[j].removeAttribute(filterAttr);
+                $items[j].removeAttribute(zebraAttr);
             }
 
             ($wrapper || $input).removeAttribute(hasFilterAttr);
             ($wrapper || $input).removeAttribute(noMatchAttr);
 
-            if ($input.form) $input.form.removeEventListener('reset', self.clear);
+            if ($input.form) $input.form.removeEventListener("reset", self.clear);
 
-            $input.removeEventListener('input', addHandleInput);
-            $input.removeEventListener('focus', handleFocus);
-            $input.removeEventListener('blur', handleBlur);
-            $input.removeEventListener('keydown', handleKeydown);
+            $input.removeEventListener("input", addHandleInput);
+            $input.removeEventListener("focus", handleFocus);
+            $input.removeEventListener("blur", handleBlur);
+            $input.removeEventListener("keydown", handleKeydown);
 
-            document.removeEventListener('filterboxsearch', addFilterBoxSearch);
+            document.removeEventListener("filterboxsearch", addFilterBoxSearch);
 
-            window.removeEventListener('resize', _fixTableColumns);
+            window.removeEventListener("resize", _fixTableColumns);
             initTableColumns = false;
 
-            if ($target.tagName === 'TABLE') {
-                var $headers = $target.querySelectorAll('th');
+            if ($target.tagName === "TABLE") {
+                var $headers = $target.querySelectorAll("th");
 
                 for (var i = 0; i < $headers.length; i++) {
-                    $headers[i].removeAttribute('style');
+                    $headers[i].removeAttribute("style");
                 }
             }
 
@@ -211,16 +214,16 @@
             if (label) removeEl($label);
 
             // remove added attributes from $input only if added by the plugin
-            if (input && typeof inputAttrs === 'object') {
+            if (input && typeof inputAttrs === "object") {
                 for (var key in inputAttrs) {
                     if (inputAttrs.hasOwnProperty(key) && $input.getAttribute(key) === inputAttrs[key]) {
                         $input.removeAttribute(key);
                     }
-                    if ($input.id === self.hash) $input.removeAttribute('id');
+                    if ($input.id === self.hash) $input.removeAttribute("id");
                     ($wrapper || $input).removeAttribute(initAttr);
                 }
             }
-            $input.value = '';
+            $input.value = "";
             if (!input) removeEl($input);
 
             $target.removeAttribute(hideAttr);
@@ -288,11 +291,11 @@
             var a = str.indexOf(delim1),
                 out;
 
-            if (a === -1) return '';
+            if (a === -1) return "";
 
             var b = str.indexOf(delim2);
 
-            if (b === -1) return '';
+            if (b === -1) return "";
 
             if (keepDelim) {
                 out = str.substr(a, b - a + 1);
@@ -319,7 +322,7 @@
                 var node = container.childNodes[i];
 
                 if (node.className === hlClass) {
-                    node.parentNode.parentNode.replaceChild(document.createTextNode(node.parentNode.textContent.replace(/<[^>]+>/g, '')), node.parentNode);
+                    node.parentNode.parentNode.replaceChild(document.createTextNode(node.parentNode.textContent.replace(/<[^>]+>/g, "")), node.parentNode);
                     return;
                 } else if (node.nodeType !== 3) {
                     dehighlight(node);
@@ -388,18 +391,18 @@
             var s = document.getElementById(styleId);
 
             if (!s) {
-                s = document.createElement('style');
-                s.type = 'text/css';
+                s = document.createElement("style");
+                s.type = "text/css";
                 s.id = styleId;
                 s.appendChild(document.createTextNode(hlStyle));
-                document.querySelector('head').appendChild(s);
+                document.querySelector("head").appendChild(s);
             }
 
             s.innerText = css + hlStyle + hiddenStyle;
         }
 
         function setAttrs(el, attrs) {
-            if (el && attrs && typeof attrs === 'object') {
+            if (el && attrs && typeof attrs === "object") {
                 for (var key in attrs) {
                     if (attrs.hasOwnProperty(key)) {
                         el.setAttribute(key, attrs[key]);
@@ -427,15 +430,15 @@
             if (input && document.querySelector(input)) {
                 $input = document.querySelector(input);
             } else {
-                $input = document.createElement('input');
-                $input.type = 'text';
+                $input = document.createElement("input");
+                $input.type = "text";
                 insertDom($input, $addTo, position);
             }
 
             setAttrs($input, inputAttrs);
 
             if (wrapper) {
-                $wrapper = document.createElement(wrapper.tag || 'div');
+                $wrapper = document.createElement(wrapper.tag || "div");
                 setAttrs($wrapper, wrapperAttrs);
                 wrap($input, $wrapper);
             }
@@ -443,11 +446,11 @@
             if (label) {
                 var id = $input.id || self.hash;
 
-                $label = document.createElement('label');
-                $label.setAttribute('for', id);
+                $label = document.createElement("label");
+                $label.setAttribute("for", id);
                 $label.innerHTML = label;
 
-                $input.id || $input.setAttribute('id', id);
+                $input.id || $input.setAttribute("id", id);
 
                 _insertBefore($label, $input);
             }
@@ -463,13 +466,13 @@
             if (!$el || !$to) return false;
 
             switch (where) {
-                case 'append':
+                case "append":
                     $to.appendChild($el);
                     break;
-                case 'prepend':
+                case "prepend":
                     $to.parentElement.insertBefore($el, $to);
                     break;
-                case 'after':
+                case "after":
                     _insertAfter($el, $to);
                     break;
                 default:
@@ -480,7 +483,7 @@
         function addDisplays() {
             if (!displays) return false;
 
-            if (typeof displays === 'function') {
+            if (typeof displays === "function") {
                 displays = displays(self);
             }
 
@@ -489,9 +492,9 @@
 
                 var d = displays[k],
                     $addTo = d.addTo && d.addTo.selector ? document.querySelector(d.addTo.selector) : $target,
-                    position = d.addTo && d.addTo.position || 'before',
-                    tag = d.tag || 'div',
-                    text = d.text && typeof d.text === 'function' ? d.text : false;
+                    position = d.addTo && d.addTo.position || "before",
+                    tag = d.tag || "div",
+                    text = d.text && typeof d.text === "function" ? d.text : false;
 
                 if (text) {
                     var $display = document.createElement(tag);
@@ -517,25 +520,25 @@
         }, inputDelay);
 
         function addEvents() {
-            $input.addEventListener('focus', handleFocus);
-            $input.addEventListener('blur', handleBlur);
-            $input.addEventListener('keydown', handleKeydown);
-            $input.addEventListener('input', addHandleInput);
+            $input.addEventListener("focus", handleFocus);
+            $input.addEventListener("blur", handleBlur);
+            $input.addEventListener("keydown", handleKeydown);
+            $input.addEventListener("input", addHandleInput);
 
-            if ($input.form) $input.form.addEventListener('reset', self.clear);
+            if ($input.form) $input.form.addEventListener("reset", self.clear);
 
-            document.addEventListener('filterboxsearch', addFilterBoxSearch);
+            document.addEventListener("filterboxsearch", addFilterBoxSearch);
 
             if (enableObserver && window.MutationObserver) {
                 observer = new MutationObserver(function (mutationsList) {
                     for (var i = 0; i < mutationsList.length; i++) {
                         var t = mutationsList[i].type;
-                        if (t === 'childList') {
+                        if (t === "childList") {
                             self.updateDisplays();
                             self.setZebra();
-                        } else if (t === 'characterData') {
+                        } else if (t === "characterData") {
                             handleFocus(null);
-                            hl && highlight(self.getFilter(), $target, dataSources.join(','));
+                            hl && highlight(self.getFilter(), $target, dataSources.join(","));
                             self.setZebra();
                             self.updateDisplays();
                         }
@@ -553,10 +556,10 @@
             if ($el) {
                 if ($el.length) {
                     for (var i = 0; i < $el.length; i++) {
-                        $el[i].setAttribute(hideAttr, hide ? '1' : '0')
+                        $el[i].setAttribute(hideAttr, hide ? "1" : "0");
                     }
                 } else {
-                    $el.setAttribute(hideAttr, hide ? '1' : '0')
+                    $el.setAttribute(hideAttr, hide ? "1" : "0");
                 }
             }
         };
@@ -566,7 +569,7 @@
         };
 
         self.isAllItemsVisible = function () {
-            return self.getHiddenSelector() === '';
+            return self.getHiddenSelector() === "";
         };
 
         self.getFilterTokens = function (str) {
@@ -598,17 +601,17 @@
         }
 
         var _fixTableColumns = debounce(function () {
-            var $headers = self.getTarget().querySelectorAll('th');
+            var $headers = self.getTarget().querySelectorAll("th");
 
             for (var i = 0; i < $headers.length; i++) {
-                $headers[i].style.width = $headers[i].offsetWidth + 'px';
+                $headers[i].style.width = $headers[i].offsetWidth + "px";
             }
         }, 500);
 
         self.fixTableColumns = function ($table) {
             _fixTableColumns($table);
             if (!initTableColumns) {
-                window.addEventListener('resize', _fixTableColumns);
+                window.addEventListener("resize", _fixTableColumns);
                 initTableColumns = true;
             }
         };
@@ -616,9 +619,9 @@
         self.clearFilterBox = function () {
             ($wrapper || $input).removeAttribute(noMatchAttr);
             ($wrapper || $input).removeAttribute(hasFilterAttr);
-            $input.value = '';
-            setStyles('');
-            hideSelector = '';
+            $input.value = "";
+            setStyles("");
+            hideSelector = "";
             hl && dehighlight($target);
             self.updateDisplays();
             callCb(afterFilter);
@@ -629,7 +632,7 @@
         }
 
         function handleFocus(e, force) {
-            if (callCb(onFocus) === false) return;
+            if (callCb(onFocus) === false) return false;
             if (useDomFilter) return false;
 
             if (force === undefined) {
@@ -638,6 +641,12 @@
                 }
             }
 
+            self.updateItemFilters();
+
+            ($wrapper || $input).setAttribute(initAttr, "1");
+        }
+
+        self.updateItemFilters = function () {
             var $items = getItems();
 
             for (var i = 0; i < $items.length; i++) {
@@ -645,7 +654,7 @@
                     data,
                     currentValue;
 
-                data = getTextualContent($item.querySelectorAll(dataSources.join(',')));
+                data = getTextualContent($item.querySelectorAll(dataSources.join(",")));
                 data += getExtraFilterAttrsContent($item, extraFilterAttrs);
 
                 if (data) {
@@ -661,15 +670,13 @@
                     data = unique(data); // remove duplicates
 
                     data = data.filter(function (el) {
-                        return el != "";
+                        return el !== "";
                     });
 
                     $item.setAttribute(filterAttr, data.join(SEPARATOR).trim());
                 }
             }
-
-            ($wrapper || $input).setAttribute(initAttr, '1');
-        }
+        };
 
         self.visitFirstLink = debounce(function (e, forceNewTab) {
             var $firstItem = self.getFirstVisibleItem(),
@@ -677,23 +684,23 @@
 
             if (!$firstItem) return false;
 
-            if (self.getFilter() === '') {
+            if (self.getFilter() === "") {
                 window.localStorage && localStorage.removeItem(self.hash);
             }
 
-            if ($firstItem.tagName === 'A') {
+            if ($firstItem.tagName === "A") {
                 $link = $firstItem;
-            } else if ($firstItem.querySelector('a')) {
-                $link = $firstItem.querySelector('a');
+            } else if ($firstItem.querySelector("a")) {
+                $link = $firstItem.querySelector("a");
             }
 
             if ($link) {
                 e.preventDefault();
 
-                if (forceNewTab && $link.getAttribute('target') !== '_blank') {
-                    $link.setAttribute('target', '_blank');
+                if (forceNewTab && $link.getAttribute("target") !== "_blank") {
+                    $link.setAttribute("target", "_blank");
                     $link.click();
-                    $link.removeAttribute('target');
+                    $link.removeAttribute("target");
                 } else {
                     $link.click();
                 }
@@ -716,7 +723,7 @@
                     callCb(onEscape, e);
                 } else {
                     e.preventDefault();
-                    if (self.getFilter() !== '') {
+                    if (self.getFilter() !== "") {
                         self.clearFilterBox();
                     } else {
                         $input.blur();
@@ -735,8 +742,8 @@
 
             dehighlight();
 
-            if (v === '!' || v.length > 0 && replaceAll(v, '"', '') === '') {
-                setStyles('');
+            if (v === "!" || v.length > 0 && replaceAll(v, '"', "") === "") {
+                setStyles("");
                 return false;
             }
 
@@ -747,13 +754,13 @@
 
             if (callCb(beforeFilter) === false) return;
 
-            ($wrapper || $input).setAttribute(hasFilterAttr, (v ? '1' : '0'));
-            ($wrapper || $input).setAttribute(invertAttr, (invert ? '1' : '0'));
+            ($wrapper || $input).setAttribute(hasFilterAttr, v ? "1" : "0");
+            ($wrapper || $input).setAttribute(invertAttr, invert ? "1" : "0");
 
             // do the filter
             var terms = getTerms(v),
                 hideSelector,
-                $dataSources = dataSources.join(','),
+                $dataSources = dataSources.join(","),
                 $visibleItems;
 
             if (!terms) {
@@ -761,12 +768,12 @@
             } else {
                 hideSelector = invert ? self.getVisibleSelector(v) : self.getHiddenSelector(v);
 
-                setStyles(hideSelector + '{display:none}');
+                setStyles(hideSelector + "{display:none}");
 
                 // need to get non-visible items too, parent may be hidden
                 count = self.countVisible();
 
-                ($wrapper || $input).setAttribute(noMatchAttr, (count ? '0' : '1'));
+                ($wrapper || $input).setAttribute(noMatchAttr, count ? "0" : "1");
 
                 if (!invert && count && hl) {
                     $visibleItems = self.getVisibleItems(v);
@@ -785,9 +792,9 @@
 
             self.updateDisplays();
             self.setZebra();
-            callCb(afterFilter)
+            callCb(afterFilter);
 
-            document.dispatchEvent(new CustomEvent('filterboxsearch', {
+            document.dispatchEvent(new CustomEvent("filterboxsearch", {
                 detail: self
             }));
         }
@@ -797,33 +804,33 @@
                 terms = getTerms(v ? v : $input.value);
 
             for (var j = 0; j < terms.length; j++) {
-                selector.push(target + ' ' + items + ':not([' + filterAttr + '*="' + terms[j] + '"])');
+                selector.push(target + " " + items + ":not([" + filterAttr + '*="' + terms[j] + '"])');
             }
 
-            return selector.join(',');
+            return selector.join(",");
         };
 
         self.getVisibleSelector = function (v) {
-            var selector = '',
+            var selector = "",
                 terms = getTerms(v ? v : $input.value);
 
             for (var j = 0; j < terms.length; j++) {
-                selector += '[' + filterAttr + '*="' + terms[j] + '"]';
+                selector += "[" + filterAttr + '*="' + terms[j] + '"]';
             }
 
-            return target + ' ' + items + selector;
+            return target + " " + items + selector;
         };
 
         self.isInvertFilter = function () {
             var v = this.getFilter();
 
-            return (v && v.length > 1 && (v.indexOf('!') === 0 || v.indexOf('!') === v.length - 1));
+            return v && v.length > 1 && (v.indexOf("!") === 0 || v.indexOf("!") === v.length - 1);
         };
 
         self.getInvertFilter = function () {
             var v = self.getFilter();
 
-            v = v.indexOf('!') === 0 ? v.substring(1) : v.substring(0, v.length - 1);
+            v = v.indexOf("!") === 0 ? v.substring(1) : v.substring(0, v.length - 1);
 
             return (v || "").trim();
         };
@@ -879,13 +886,13 @@
                 var selector = extraFilterAttrs[k],
                     value;
 
-                if (selector.indexOf('[') === -1) {
+                if (selector.indexOf("[") === -1) {
                     value = $item.getAttribute(selector);
                     if (value) extraData.push(value.trim());
 
                 } else {
                     var $extraFilterItems = $item.querySelectorAll(selector),
-                        attr = getSubStr(selector, '[', ']');
+                        attr = getSubStr(selector, "[", "]");
 
                     if ($extraFilterItems.length) {
                         for (var j = 0; j < $extraFilterItems.length; j++) {
@@ -896,17 +903,17 @@
                 }
             }
 
-            return extraData ? extraData.join(SEPARATOR) : '';
+            return extraData.join(SEPARATOR);
         }
 
         /**
          * Get textContent of one or more elements (recursive)
          *
-         * @param $el
-         * @return string
+         * @param {NodeList} $el DOM elements to get text content from
+         * @return {string} text content
          */
         function getTextualContent($el) {
-            var content = '';
+            var content = "";
 
             if ($el) {
                 if ($el.length) {
@@ -918,7 +925,7 @@
                         content += SEPARATOR + $el.textContent;
                     }
 
-                    content = removeNewLines(content.replace(/<[^>]*>/g, '')).toLowerCase();
+                    content = removeNewLines(content.replace(/<[^>]*>/g, "")).toLowerCase();
                 }
             }
 
@@ -929,7 +936,7 @@
         function removeNewLines(str) {
             str = str.replace(/\s{2,}/g, SEPARATOR);
             str = str.replace(/\t/g, SEPARATOR);
-            str = str.toString().trim().replace(/(\r\n|\n|\r)/g, '');
+            str = str.toString().trim().replace(/(\r\n|\n|\r)/g, "");
             return str;
         }
 
