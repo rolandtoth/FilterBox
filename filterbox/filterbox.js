@@ -1,6 +1,6 @@
 /**
- * FilterBox v0.4.6
- * 2019/07/05
+ * FilterBox v0.4.7
+ * 2019/07/07
  */
 (function (window, document) {
     "use strict";
@@ -86,6 +86,10 @@
             suffix = o.suffix ? o.suffix : "",
             zebra = o.zebra || false,
             lazy = o.lazy !== false,
+            keyNav = o.keyNav || false,
+            keyNavClass = "filterbox-keynav" + suffix,
+            keyNavStyle = keyNav && keyNav.style ? "." + keyNavClass + "{" + keyNav.style + "}" : "",
+            keyNavAutoSelectFirst = keyNav && keyNav.autoSelectFirst !== false,
             zebraAttr = "data-odd" + suffix,
             hideAttr = "data-hide" + suffix,
             initAttr = "data-init" + suffix,
@@ -118,7 +122,14 @@
             init = false,
             initTableColumns = false,
             observer,
-            SEPARATOR = o.SEPARATOR || "|";
+            SEPARATOR = o.SEPARATOR || "|",
+            _scrollIntoViewIfNeeded = document.body.scrollIntoViewIfNeeded,
+            keys = {
+                "UP": 38,
+                "DOWN": 40,
+                "ESCAPE": 27,
+                "ENTER": 13
+            };
 
         function getItems() {
             return $target.querySelectorAll(items);
@@ -398,7 +409,7 @@
                 document.querySelector("head").appendChild(s);
             }
 
-            s.innerText = css + hlStyle + hiddenStyle;
+            s.innerText = css + hlStyle + keyNavStyle + hiddenStyle;
         }
 
         function setAttrs(el, attrs) {
@@ -713,12 +724,71 @@
             }
         }, inputDelay);
 
+        self.removeKeyNavClass = function () {
+            var $selectedItems = $target.querySelectorAll("." + keyNavClass);
+
+            if ($selectedItems.length) {
+                for (var j = 0; j < $selectedItems.length; j++) {
+                    $selectedItems[j].classList.remove(keyNavClass);
+                }
+            }
+        }
+
         function handleKeydown(e) {
+            var key;
+
             e = e || window.event;
 
             if (!e) return false;
 
-            if (e.keyCode === 27) {
+            key = e.keyCode;
+
+            if (keyNav && (key === keys.UP || key === keys.DOWN)) {
+                var loopSelection = false,
+                    scrollIntoView = true;
+
+                e.preventDefault();
+
+                var forwards = key === keys.DOWN,
+                    $visibleItems = self.getVisibleItems(self.getVisibleSelector()),
+                    total = $visibleItems.length,
+                    $firstItem = self.getFirstVisibleItem(),
+                    $lastItem = $visibleItems.item(total - 1),
+                    $nextItem = forwards ? $firstItem : $lastItem,
+                    $selectedItem,
+                    selectedIndex;
+
+                if (total === 0) return;
+
+                if (total === 1) {
+                    self.setKeyNavItem($firstItem);
+                    return;
+                }
+
+                for (var k = 0; k < total; k++) {
+                    var $item = $visibleItems[k];
+
+                    if ($item.classList.contains(keyNavClass)) {
+                        $selectedItem = $item;
+                        selectedIndex = k;
+                        break;
+                    }
+                }
+
+                if ($selectedItem) {
+                    $nextItem = $visibleItems.item(selectedIndex + (forwards ? 1 : -1));
+
+                    if (!$nextItem && loopSelection) {
+                        $nextItem = forwards ? $firstItem : $lastItem;
+                    }
+                }
+
+                if ($nextItem) {
+                    $selectedItem && $selectedItem.classList.remove(keyNavClass);
+                    self.setKeyNavItem($nextItem)
+                }
+
+            } else if (key === keys.ESCAPE) {
                 if (onEscape) {
                     callCb(onEscape, e);
                 } else {
@@ -729,8 +799,8 @@
                         $input.blur();
                     }
                 }
-            }
-            if (e.keyCode === 13) {
+
+            } else if (e.keyCode === keys.ENTER) {
                 callCb(onEnter, e);
             }
         }
@@ -778,6 +848,13 @@
                 if (!invert && count && hl) {
                     $visibleItems = self.getVisibleItems(v);
 
+                    if (keyNavAutoSelectFirst) {
+                        var $firstItem = $visibleItems.item(0);
+
+                        self.removeKeyNavClass();
+                        self.setKeyNavItem($firstItem)
+                    }
+
                     setTimeout(function () {
                         for (var i = 0; i < $visibleItems.length; i++) {
                             hl && dehighlight($visibleItems[i]);
@@ -798,6 +875,11 @@
                 detail: self
             }));
         }
+
+        self.setKeyNavItem = function ($el) {
+            $el.classList.add(keyNavClass);
+            _scrollIntoViewIfNeeded && $el.scrollIntoViewIfNeeded();
+        };
 
         self.getHiddenSelector = function (v) {
             var selector = [],
@@ -868,6 +950,10 @@
                     return $items[i];
                 }
             }
+        };
+
+        self.getSelectedItem = function () {
+            return $target.querySelector("." + keyNavClass);
         };
 
         self.getVisibleItems = function (v) {
