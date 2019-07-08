@@ -1,6 +1,6 @@
 /**
- * FilterBox v0.4.7
- * 2019/07/07
+ * FilterBox v0.4.8
+ * 2019/07/08
  */
 (function (window, document) {
     "use strict";
@@ -87,7 +87,7 @@
             zebra = o.zebra || false,
             lazy = o.lazy !== false,
             keyNav = o.keyNav || false,
-            keyNavClass = "filterbox-keynav" + suffix,
+            keyNavClass = "fbx-keynav-active" + suffix,
             keyNavStyle = keyNav && keyNav.style ? "." + keyNavClass + "{" + keyNav.style + "}" : "",
             keyNavAutoSelectFirst = keyNav && keyNav.autoSelectFirst !== false,
             zebraAttr = "data-odd" + suffix,
@@ -98,7 +98,7 @@
             noMatchAttr = "data-no-match" + suffix,
             filterAttr = o.filterAttr || "data-filter" + suffix,
             extraFilterAttrs = o.extraFilterAttrs || false,
-            styleId = "filterbox-css" + suffix,
+            styleId = "fbx-style" + suffix,
             useDomFilter = o.useDomFilter || false,
             beforeFilter = setCb("beforeFilter"),
             afterFilter = setCb("afterFilter"),
@@ -744,7 +744,7 @@
             key = e.keyCode;
 
             if (keyNav && (key === keys.UP || key === keys.DOWN)) {
-                var loopSelection = false,
+                var loop = false,
                     scrollIntoView = true;
 
                 e.preventDefault();
@@ -778,7 +778,7 @@
                 if ($selectedItem) {
                     $nextItem = $visibleItems.item(selectedIndex + (forwards ? 1 : -1));
 
-                    if (!$nextItem && loopSelection) {
+                    if (!$nextItem && loop) {
                         $nextItem = forwards ? $firstItem : $lastItem;
                     }
                 }
