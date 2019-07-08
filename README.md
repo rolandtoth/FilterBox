@@ -21,7 +21,6 @@ FilterBox is a pure JavaScript utility to filter (search) DOM nodes.
 - invert mode with "!" character
 - no dependencies
 
-
 ## How FilterBox works
 
 FilterBox adds a HTML input to the DOM to filter elements inside a target DOM container.
@@ -36,7 +35,6 @@ This search method is very fast because only one DOM element needs to be updated
 
 - browsers will render results slower if the amount of items is very large
 - FilterBox has a highlight feature that doesn't play nicely with large data so you may need to disable it when experiencing issues
-
 
 ## Terminology
 
@@ -57,7 +55,6 @@ This search method is very fast because only one DOM element needs to be updated
 | label | Label node to insert before the main input. | -
 | displays | Additional nodes to add to the DOM, eg. counters, status messages, etc. | -
 
-
 ## Getting Started
 
 You will need an existing DOM node to apply FilterBox to it. Make sure that you have included `filterbox.js` to the page before initialization, preferably after the DOM target.
@@ -66,11 +63,9 @@ There is a helper function `addFilterBox` that accepts an object of options. Thi
 
 After initialization you can access the FilterBox instance whether by its handle (if assigned to a variable) or through the `getFilterBox()` method on the main input (see the Methods section below for more info).
 
-
 ## Styling
 
 FilterBox comes with no CSS although some internal styles are added automatically to the DOM, eg. for filtering and highlighting. These styles are appended to the HTML head on runtime.
-
 
 ## Basic example
 
@@ -93,7 +88,6 @@ Note: FilterBox adds search terms to the items' `data-filter` attribute only on 
 ## Advanced example
 
 The basic example lacks many features that FilterBox offers, eg. has no displays (counters), no highlighting, no callbacks etc. The advanced example shows how to add them.
-
 
 ```javascript
 var myFilterBox = addFilterBox({
@@ -167,7 +161,6 @@ var myFilterBox = addFilterBox({
     useDomFilter: false
 });
 
-
 function onFilterBoxReady() {
     this.fixTableColumns(this.getTarget());
     this.filter('bras');
@@ -176,7 +169,6 @@ function onFilterBoxReady() {
 ```
 
 See the Options section below for more info on the individual options.
-
 
 ## Options
 
@@ -246,6 +238,8 @@ If present, FilterBox will highlight the searched term in the main target. It ca
 - `style` is a CSS rule to use for highlighting, eg. `background: yellow`. You can also use CSS for styling, the corresponding element name is ```fbxhl```, and it gets the ```on``` class name (plus suffix, if set). when it's active (in CSS you can use ```fbxhl.on { ... }```).
 - `minChar` number of characters when highlight needs to be used. Recommended to set a value above 2 (default).
 
+Tip: use the ```onEnter``` callback with the ```getFirstVisibleItem()``` method to interact with the first matching item on hitting enter.
+
 ### input
 
 The input element to enter search terms. This can be an existing node or a new one that FilterBox creates.
@@ -314,7 +308,6 @@ You can wrap the main input with a wrapper element which can make CSS styling ea
 `tag` will determine the DOM element type, defaults to "div" if not set. Attributes can be set here too (see "input" above for details).
 
 To add no wrap, omit the wrapper or set it to false.
-
 
 ## Methods
 
@@ -430,7 +423,6 @@ Callbacks run when a certain event happens in the FilterBox instance, eg. when i
 
 In callbacks `onInit`, `beforeFilter` and `beforeDestroy` if your function returns false, FilterBox will stop. For example you can prevent creating a FilterBox instance if a certain condition is met with `onInit` (eg. the main target contains only 5 items), or prevent further filtering in `beforeFilter`, eg. if the current search term is "bazinga".
 
-
 ## Events
 
 Currently there is only one event called `filterboxsearch` that is emitted on the document after each filter.
@@ -443,7 +435,6 @@ document.addEventListener('filterboxsearch', function(e) {
 });
 ```
 
-
 ## MutationObserver
 
 When setting `enableObserver` to true, all FilterBox displays will react if the number of the items or their text changes.
@@ -451,7 +442,6 @@ When setting `enableObserver` to true, all FilterBox displays will react if the 
 Eg. if another scripts removes some rows from the target table, a counter will be automatically updated to show the correct number of visible or total items.
 
 Or you have filtered for "spaghetti" and a script adds more "spaghetti"'s to other items, those will be automatically visible too.
-
 
 ## Status attributes
 
@@ -477,13 +467,11 @@ If the filter mode is invert, the input (or the wrapper, if available) will get 
 
 After initializing the input (or the wrapper, if available) will get `data-init="1"`. 
 
-
 ## Invert filter (invert search)
 
 If the search term starts or ends with an exclamation mark ("!") character then invert filtering will be performed. This means that if you type `spaghetti!` to the input, the result set will contain items NOT having `spaghetti` in them.
 
 With invert filtering you can easily see items not matching the current search term.
-
 
 ## Contributing
 
