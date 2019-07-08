@@ -265,6 +265,8 @@ If present, you can navigate through the items using the up/down arrows. It can 
 - `style` is a CSS rule to use for highlighting, eg. `background: #eee`. You can also use CSS for styling, the corresponding classname is ```filterbox-keynav``` (plus suffix, if set).
 - `autoSelectFirst` whether to automatically select the first item (default: true)
 
+Note: you may need to disable autocomplete by adding ```autocomplete: "off"``` when creating the main input.
+
 Tip: use the ```onEnter``` callback with the ```getSelectedItem()``` method to interact with the selected item on hitting enter.
 
 ### suffix
