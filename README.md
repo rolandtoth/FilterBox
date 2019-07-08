@@ -12,6 +12,7 @@ FilterBox is a pure JavaScript utility to filter (search) DOM nodes.
 - apply to existing DOM input field or add new
 - create any number of displays (counters, status texts, etc)
 - fine-grained control over created nodes (tag, attributes, DOM position)
+- navigate filtered items up/down arrows
 - add multiple filterboxes to the same target
 - auto-update displays on target DOM change
 - callbacks and public methods
@@ -150,6 +151,9 @@ var myFilterBox = addFilterBox({
             this.toggleHide(this.getTarget(), this.isAllItemsHidden());
         }
     },
+    keyNav: {
+        style: 'background: #eee'
+    },
     highlight: {
         style: 'background: #ff9',
         minChar: 3
@@ -208,37 +212,6 @@ Here you can use FilterBox methods to get data from the  FilterBox instance, eg.
 
 You can set as many displays as you need.
 
-### filterAttr
-
-If you would like to set the name of the data-attribute FilterBox uses for filtering you can set it here. The `suffix` will be appended, if available.
-
-If `useDomFilter` (see below) is set to true then FilterBox will not add data-filter attributes but will use existing ones available on target items.
-
-### highlight
-
-If present, FilterBox will highlight the searched term in the main target.
-
-`style` is a CSS rule to use for highlighting, eg. `background: yellow`
-`minChar` number of characters when highlight needs to be used. Recommended to set a value of 2 or more.
-
-### input
-
-The input element to enter search terms. This can be an existing node or a new one that FilterBox creates.
-
-If you set a CSS selector (`selector`) here and such element is available in the DOM, FilterBox will use that, otherwise adds a new one.
-
-You can set attributes for the input with the `attrs` object.
-
-Each property of the object will be added to the input, eg. setting `class: "form-input large"` will add two classes, `autocomplete: "off"` will set autocomplete off, and so on.
-
-Optionally you can set a `label` property for the input to prepend a label DOM node to the main input.
-
-### inputDelay
-
-Time in milliseconds to delay triggering filtering (default: 300).
-
-Increase this value if experiencing slow filtering, eg. on heavier DOM target.
-
 ### extraFilterAttrs
 
 An array of data attributes (or selectors with data-attributes) whose values you would like to add to the filter keywords.
@@ -259,6 +232,46 @@ extraFilterAttrs: [
 - selector with attribute: values will be gathered from the items's descendants (on `td` elements that has `data-email` attributes here)
 
 Note that when an extra filter attribute is matched, highlighting may not available as there's no visible HTML element to use.
+
+### filterAttr
+
+If you would like to set the name of the data-attribute FilterBox uses for filtering you can set it here. The `suffix` will be appended, if available.
+
+If `useDomFilter` (see below) is set to true then FilterBox will not add data-filter attributes but will use existing ones available on target items.
+
+### highlight
+
+If present, FilterBox will highlight the searched term in the main target. It can be ```true``` or an object with the following properties:
+
+- `style` is a CSS rule to use for highlighting, eg. `background: yellow`. You can also use CSS for styling, the corresponding element name is ```fbxhl```, and it gets the ```on``` class name (plus suffix, if set). when it's active (in CSS you can use ```fbxhl.on { ... }```).
+- `minChar` number of characters when highlight needs to be used. Recommended to set a value above 2 (default).
+
+### input
+
+The input element to enter search terms. This can be an existing node or a new one that FilterBox creates.
+
+If you set a CSS selector (`selector`) here and such element is available in the DOM, FilterBox will use that, otherwise adds a new one.
+
+You can set attributes for the input with the `attrs` object.
+
+Each property of the object will be added to the input, eg. setting `class: "form-input large"` will add two classes, `autocomplete: "off"` will set autocomplete off, and so on.
+
+Optionally you can set a `label` property for the input to prepend a label DOM node to the main input.
+
+### inputDelay
+
+Time in milliseconds to delay triggering filtering (default: 300).
+
+Increase this value if experiencing slow filtering, eg. on heavier DOM target.
+
+### keyNav
+
+If present, you can navigate through the items using the up/down arrows. It can be ```true``` or an object with the following properties:
+
+- `style` is a CSS rule to use for highlighting, eg. `background: #eee`. You can also use CSS for styling, the corresponding classname is ```filterbox-selected``` (plus suffix, if set).
+- `autoSelectFirst` whether to automatically select the first item (default: true)
+
+Tip: use the ```onEnter``` callback with the ```getSelectedItem()``` method to interact with the selected item on hitting enter.
 
 ### suffix
 
@@ -376,6 +389,10 @@ Returns the main input DOM element.
 ### getInvertFilter()
 
 Returns the main input's value when in invert mode (strips "!" character).
+
+### getSelectedItem()
+
+If keyNav is enabled, returns the first selected item.
 
 ### getTarget()
 
