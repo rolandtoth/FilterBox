@@ -262,7 +262,8 @@ Increase this value if experiencing slow filtering, eg. on heavier DOM target.
 
 If present, you can navigate through the items using the up/down arrows. It can be ```true``` or an object with the following properties:
 
-- `style` is a CSS rule to use for highlighting, eg. `background: #eee;`. You can also use CSS for styling, the corresponding classname is ```fbx-keynav-active``` (plus suffix, if set).
+- `style` is a CSS rule to use for highlighting, eg. `background: #eee;`
+- `class` custom class name instead of the default ```fbx-keynav-active``` one (plus suffix, if set)
 - `autoSelectFirst` whether to automatically select the first item (default: true)
 
 Note: you may need to disable autocomplete by adding ```autocomplete: "off"``` when creating the main input.
@@ -424,6 +425,23 @@ Updates attached displays' texts, if there's any. FilterBox does this automatica
 Callbacks run when a certain event happens in the FilterBox instance, eg. when initialization has finished and it's ready (`onReady`), before filtering (`beforeFilter`) or after destroy (`afterDestroy`).
 
 In callbacks `onInit`, `beforeFilter` and `beforeDestroy` if your function returns false, FilterBox will stop. For example you can prevent creating a FilterBox instance if a certain condition is met with `onInit` (eg. the main target contains only 5 items), or prevent further filtering in `beforeFilter`, eg. if the current search term is "bazinga".
+
+**Available callbacks:**
+
+- onInit
+- beforeFilter
+- afterFilter
+- beforeKeyNav
+- afterKeyNav
+- onEnter
+- onEscape
+- onReady
+- onFocus
+- onBlur
+- beforeUpdate
+- afterUpdate
+- beforeDestroy
+- afterDestroy
 
 ## Events
 
