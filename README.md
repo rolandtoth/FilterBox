@@ -428,20 +428,16 @@ In callbacks `onInit`, `beforeFilter` and `beforeDestroy` if your function retur
 
 **Available callbacks:**
 
-- onInit
-- beforeFilter
-- afterFilter
-- beforeKeyNav
-- afterKeyNav
+- beforeDestroy / afterDestroy
+- beforeFilter / afterFilter
+- beforeKeyNav / afterKeyNav
+- beforeUpdate / afterUpdate
+- onBlur
 - onEnter
 - onEscape
-- onReady
 - onFocus
-- onBlur
-- beforeUpdate
-- afterUpdate
-- beforeDestroy
-- afterDestroy
+- onInit
+- onReady
 
 ## Events
 
