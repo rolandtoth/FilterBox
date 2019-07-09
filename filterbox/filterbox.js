@@ -1,6 +1,6 @@
 /**
- * FilterBox v0.4.8
- * 2019/07/08
+ * FilterBox v0.4.9
+ * 2019/07/09
  */
 (function (window, document) {
     "use strict";
@@ -87,7 +87,7 @@
             zebra = o.zebra || false,
             lazy = o.lazy !== false,
             keyNav = o.keyNav || false,
-            keyNavClass = "fbx-keynav-active" + suffix,
+            keyNavClass = (keyNav && keyNav.class ? keyNav.class : "fbx-keynav-active") + suffix,
             keyNavStyle = keyNav && keyNav.style ? "." + keyNavClass + "{" + keyNav.style + "}" : "",
             keyNavAutoSelectFirst = keyNav && keyNav.autoSelectFirst !== false,
             zebraAttr = "data-odd" + suffix,
@@ -102,6 +102,8 @@
             useDomFilter = o.useDomFilter || false,
             beforeFilter = setCb("beforeFilter"),
             afterFilter = setCb("afterFilter"),
+            beforeKeyNav = setCb("beforeKeyNav"),
+            afterKeyNav = setCb("afterKeyNav"),
             onEnter = setCb("onEnter"),
             onEscape = setCb("onEscape"),
             onReady = setCb("onReady"),
@@ -727,10 +729,8 @@
         self.removeKeyNavClass = function () {
             var $selectedItems = $target.querySelectorAll("." + keyNavClass);
 
-            if ($selectedItems.length) {
-                for (var j = 0; j < $selectedItems.length; j++) {
-                    $selectedItems[j].classList.remove(keyNavClass);
-                }
+            for (var j = 0; j < $selectedItems.length; j++) {
+                $selectedItems[j].classList.remove(keyNavClass);
             }
         }
 
@@ -744,6 +744,8 @@
             key = e.keyCode;
 
             if (keyNav && (key === keys.UP || key === keys.DOWN)) {
+                if (callCb(beforeKeyNav) === false) return;
+
                 var loop = false,
                     scrollIntoView = true;
 
@@ -784,8 +786,8 @@
                 }
 
                 if ($nextItem) {
-                    $selectedItem && $selectedItem.classList.remove(keyNavClass);
-                    self.setKeyNavItem($nextItem)
+                    self.setKeyNavItem($nextItem);
+                    callCb(afterKeyNav);
                 }
 
             } else if (key === keys.ESCAPE) {
@@ -845,15 +847,14 @@
 
                 ($wrapper || $input).setAttribute(noMatchAttr, count ? "0" : "1");
 
+                if (count && keyNavAutoSelectFirst) {
+                    if (callCb(beforeKeyNav) === false) return;
+                    self.setKeyNavItem(self.getFirstVisibleItem());
+                    callCb(afterKeyNav);
+                }
+
                 if (!invert && count && hl) {
                     $visibleItems = self.getVisibleItems(v);
-
-                    if (keyNavAutoSelectFirst) {
-                        var $firstItem = $visibleItems.item(0);
-
-                        self.removeKeyNavClass();
-                        self.setKeyNavItem($firstItem)
-                    }
 
                     setTimeout(function () {
                         for (var i = 0; i < $visibleItems.length; i++) {
@@ -877,6 +878,7 @@
         }
 
         self.setKeyNavItem = function ($el) {
+            self.removeKeyNavClass();
             $el.classList.add(keyNavClass);
             _scrollIntoViewIfNeeded && $el.scrollIntoViewIfNeeded();
         };
