@@ -1,6 +1,6 @@
 /**
- * FilterBox v0.4.9
- * 2019/07/09
+ * FilterBox v0.4.91
+ * 2019/07/14
  */
 (function (window, document) {
     "use strict";
@@ -878,6 +878,8 @@
         }
 
         self.setKeyNavItem = function ($el) {
+            if(!$el) return;
+
             self.removeKeyNavClass();
             $el.classList.add(keyNavClass);
             _scrollIntoViewIfNeeded && $el.scrollIntoViewIfNeeded();
