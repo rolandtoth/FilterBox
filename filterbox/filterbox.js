@@ -1,6 +1,6 @@
 /**
- * FilterBox v0.4.91
- * 2019/07/14
+ * FilterBox v0.4.92
+ * 2019/07/15
  */
 (function (window, document) {
     "use strict";
@@ -636,6 +636,7 @@
             setStyles("");
             hideSelector = "";
             hl && dehighlight($target);
+            self.removeKeyNavClass();
             self.updateDisplays();
             callCb(afterFilter);
         };
@@ -813,6 +814,7 @@
                 invert = false;
 
             dehighlight();
+            self.removeKeyNavClass();
 
             if (v === "!" || v.length > 0 && replaceAll(v, '"', "") === "") {
                 setStyles("");
@@ -878,9 +880,10 @@
         }
 
         self.setKeyNavItem = function ($el) {
-            if(!$el) return;
-
             self.removeKeyNavClass();
+
+            if (!$el) return;
+
             $el.classList.add(keyNavClass);
             _scrollIntoViewIfNeeded && $el.scrollIntoViewIfNeeded();
         };
