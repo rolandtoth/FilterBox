@@ -231,6 +231,10 @@ If you would like to set the name of the data-attribute FilterBox uses for filte
 
 If `useDomFilter` (see below) is set to true then FilterBox will not add data-filter attributes but will use existing ones available on target items.
 
+### hideRule
+
+CSS rule(s) to apply on items filtered out. By default it's ```display: none !important```, here you can set it to something else if you wish.
+
 ### highlight
 
 If present, FilterBox will highlight the searched term in the main target. It can be ```true``` or an object with the following properties:
