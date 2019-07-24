@@ -192,17 +192,57 @@ The messages will appear in the developer tools console.
 
 ### displays
 
-Displays are DOM elements created by FilterBox where you can dynamically modify text. Suitable for example counters, no-result messages, etc.
+Displays are DOM elements created by FilterBox where you can dynamically modify text. Suitable for eg. counters, clear buttons, no-result messages, etc.
 
 Each display can be set az an object where you can set `tag`, `attrs`, `addTo` and `text` (see above for the explanations).
 
 Their names are irrelevant, eg. "counter" in `counter: {...}` is only used to make it easier to identify them in the code.
 
-The `text` property need to be a function and return a value.
+The `text` property can be a string, or a function that returns a value.
+
+The `showIf` property needs to be a function and the display toggle "display: none" will according to its truthy or falsey return.
 
 Here you can use FilterBox methods to get data from the  FilterBox instance, eg. `this.countVisible()` will return the number of actual visible items, that is, the number of found results. See the "Methods" section below.
 
 You can set as many displays as you need.
+
+Example: add a counter that shows eg. "5/163", or nothing, if there's no match:
+
+```javascript
+counter: {
+    tag: "span",
+    attrs: {
+        "class": "filterbox-counter"
+    },
+    addTo: {
+        selector: ".filterbox-wrap",
+        position: "append"
+    },
+    text: function () {
+        return this.isAllItemsVisible() ? "" : "<strong>" + this.countVisible() + "</strong>/" + this.countTotal();
+    }
+}
+```
+
+Example: add a clear button, using adding inline onclick JavaScript, plus show only if the main input is not empty:
+
+```javascript
+clearButton: {
+    tag: "button",
+    addTo: {
+        selector: ".filterbox-wrap",
+        position: "append"
+    },
+    attrs: {
+        "class": "btn filterbox-clear-btn",
+        onclick: "var input = this.parentElement.querySelector('input'); input.getFilterBox().clearFilterBox(); input.focus();"
+    },
+    showIf: function() {
+        return this.getFilter();
+    },
+    text: "Show All"
+}
+```
 
 ### extraFilterAttrs
 
