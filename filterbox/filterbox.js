@@ -1,6 +1,6 @@
 /**
- * FilterBox v0.4.92
- * 2019/07/15
+ * FilterBox v0.4.95
+ * 2019/07/24
  */
 (function (window, document) {
     "use strict";
@@ -120,7 +120,8 @@
             hlClass = "on" + suffix,
             hlStyle = hl && hl.style ? hlTag + "." + hlClass + "{" + hl.style + "}" : "",
             hlMinChar = hl && hl.minChar ? hl.minChar : 2,
-            hiddenStyle = "[" + hideAttr + '="1"]' + "{display:none}",
+            hideRule = o.hideRule || "display: none !important;",
+            hiddenStyle = "[" + hideAttr + '="1"]' + "{" + hideRule + "}",
             init = false,
             initTableColumns = false,
             observer,
@@ -842,7 +843,7 @@
             } else {
                 hideSelector = invert ? self.getVisibleSelector(v) : self.getHiddenSelector(v);
 
-                setStyles(hideSelector + "{display:none}");
+                setStyles(hideSelector + "{" + hideRule + "}");
 
                 // need to get non-visible items too, parent may be hidden
                 count = self.countVisible();
