@@ -1,5 +1,5 @@
 /**
- * FilterBox v0.4.95
+ * FilterBox v0.4.96
  * 2019/07/24
  */
 (function (window, document) {
@@ -431,7 +431,21 @@
 
         self.updateDisplays = function () {
             for (var i = 0; i < $displays.length; i++) {
-                $displays[i].el.innerHTML = $displays[i].text.call(self);
+                var $display = $displays[i],
+                    text = $displays[i].text,
+                    showIf = $displays[i].showIf;
+
+                if (text) {
+                    if(typeof text === "function") {
+                        $display.el.innerHTML = $displays[i].text.call(self);
+                    } else {
+                        $display.el.innerHTML = text;
+                    }
+                }
+
+                if (showIf && typeof showIf === "function") {
+                    $display.el.style.display = showIf.call(self) ? "" : "none";
+                }
             }
         };
 
@@ -508,18 +522,18 @@
                     $addTo = d.addTo && d.addTo.selector ? document.querySelector(d.addTo.selector) : $target,
                     position = d.addTo && d.addTo.position || "before",
                     tag = d.tag || "div",
-                    text = d.text && typeof d.text === "function" ? d.text : false;
+                    text = d.text || "",
+                    showIf = d.showIf,
+                    $display = document.createElement(tag);
 
-                if (text) {
-                    var $display = document.createElement(tag);
                     setAttrs($display, d.attrs);
                     insertDom($display, $addTo, position);
 
                     $displays.push({
                         el: $display,
-                        text: text
+                        text: text,
+                        showIf: showIf
                     });
-                }
             }
             self.updateDisplays();
         }
