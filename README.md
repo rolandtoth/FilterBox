@@ -259,7 +259,7 @@ clearButton: {
 }
 ```
 
-Getting a display by its name is possible using the ```getDisplay("displayName")``` method, which returns the displays's DOM element.
+Getting a display by its name is possible using the ```getDisplay("displayName")``` method, which returns the display's DOM element.
 
 ### extraFilterAttrs
 
