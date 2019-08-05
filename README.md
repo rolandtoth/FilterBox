@@ -180,6 +180,21 @@ Specifies where to add the main input (or the wrapper, if available) in the DOM.
 
 If `addTo` is not set, the main input will be added before the target.
 
+### autoFilter
+
+Boolean to enable automatic filtering on type. Default is ```true```.
+
+If set to false, filtering can be triggered programmatically by setting the second parameter true of the ```filter()``` method.
+
+Example:
+
+```javascript
+var fbx = document.getElementById('filterbox').getFilterBox();
+
+fbx.filter(fbx.getFilter(), true);
+fbx.focus();
+```
+
 ### callbacks
 
 An object containing the callback functions, see the Callbacks section below.
@@ -243,6 +258,8 @@ clearButton: {
     text: "Show All"
 }
 ```
+
+Getting a display by its name is possible using the ```getDisplay("displayName")``` method, which returns the displays's DOM element.
 
 ### extraFilterAttrs
 
@@ -396,11 +413,13 @@ Removes the FilterBox instance in question and its event listeners.
 
 Enables or disables the highlight feature. Accepts `true` or `false`.
 
-### filter(searchterm)
+### filter(searchterm, force)
 
-*Parameters: searchterm (string) or none*
+*Parameters: searchterm (string) or none, force (boolean)*
 
 Filters the main target, just like if you typed something into the main input.
+
+The second parameter is required only to programmatically force filtering when the FilterBox instance is set not to filter on type (with ```autoFilter``` set to false).
 
 ### fixTableColumns(table)
 
@@ -418,6 +437,10 @@ Moves focus to the main input, which triggers the focus event.
 
 FilterBox adds `data-filter` attributes to the DOM only when the main input is first focused, so this method can be used to force a full init.
 
+### getDisplay(name)
+
+Returns the DOM element of the display by its name (that you specified on creation).
+
 ### getFilter()
 
 Returns the main input's value.
@@ -434,6 +457,10 @@ Returns the main input's value when in invert mode (strips "!" character).
 
 If keyNav is enabled, returns the first selected item.
 
+### getSetting()
+
+Returns the public settings, attributes and elements (input, target) of the current instance.
+
 ### getTarget()
 
 Returns the main target DOM element.
@@ -441,6 +468,12 @@ Returns the main target DOM element.
 ### isInvertFilter()
 
 Returns true when FilterBox is in invert mode.
+
+## setHighlight(enable)
+
+*Parameters: enable (boolean)*
+
+Use to enable/disable highlighting the searched terms.
 
 ### setZebra()
 
