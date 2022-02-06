@@ -2,7 +2,7 @@
  * FilterBox v0.4.98
  * 2022/02/06
  */
- (function (window, document) {
+(function (window, document) {
     "use strict";
 
     // CustomEvent polyfill
